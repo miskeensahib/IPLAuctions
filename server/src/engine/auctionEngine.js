@@ -56,8 +56,15 @@ async function view(code) {
     serverNow: Date.now(),
   };
 }
-async function broadcast(code) {
-  if (io) io.to(`auction:${code}`).emit('auction:update', await view(code));
+// Clients only hear about a new clock after it is saved and the update is built. That delay (clockLag) used to come out
+// of the countdown, so a 10 s timer was first shown as ~9 s. New clocks now get the typical delay added, so the
+// countdown starts at its full length when it reaches the screen. clockLag is measured from real broadcasts.
+let clockLag = 250; // ms
+async function broadcast(code, clockSetAt) {
+  if (!io) return;
+  const v = await view(code);
+  io.to(`auction:${code}`).emit('auction:update', v);
+  if (clockSetAt) clockLag = Math.round(Math.min(1500, Math.max(0, 0.7 * clockLag + 0.3 * (v.serverNow - clockSetAt))));
 }
 
 // ---------- lifecycle ----------
@@ -152,17 +159,18 @@ async function nextLot(code) {
   const idx = a.poolIndex + 1;
   if (idx >= a.pool.length || a.teams.every((t) => t.count >= a.settings.maxSquad)) return complete(code);
   const player = await Player.findById(a.pool[idx]).lean();
-  const endsAt = new Date(Date.now() + a.settings.initialSeconds * 1000);
+  const t0 = Date.now();
+  const endsAt = new Date(t0 + a.settings.initialSeconds * 1000 + clockLag);
   const rev = (a.live?.rev || 0) + 1;
   await Auction.updateOne({ _id: a._id }, {
     $set: {
       poolIndex: idx,
-      live: { player: player._id, basePrice: baseOf(player), currentBid: 0, highestTeam: null, bidCount: 0, endsAt, passed: [], phase: 'bidding', rev, lastResult: null },
+      live: { player: player._id, basePrice: baseOf(player), currentBid: 0, highestTeam: null, bidCount: 0, endsAt, clockSeconds: a.settings.initialSeconds, passed: [], phase: 'bidding', rev, lastResult: null },
     },
   });
   setTimer(code, 'close', endsAt - Date.now(), () => closeLot(code, rev));
   botKick(code);
-  await broadcast(code);
+  await broadcast(code, t0);
 }
 
 async function complete(code) {
@@ -239,17 +247,19 @@ async function placeBid(code, { teamId, clientId, amount, bot = false }) {
   checkReserve(team, bidAmt, a.settings);
 
   const now = Date.now();
-  const endsAt = new Date(Math.max(new Date(a.live.endsAt).getTime(), now + a.settings.resetSeconds * 1000));
+  const reset = now + a.settings.resetSeconds * 1000 + clockLag;
+  const extend = reset > new Date(a.live.endsAt).getTime(); // a bid never shortens the clock
+  const endsAt = new Date(extend ? reset : new Date(a.live.endsAt).getTime());
   // Optimistic concurrency: only succeeds if nobody bid since we read this lot.
   const res = await Auction.updateOne(
     { _id: a._id, status: 'live', 'live.rev': a.live.rev, 'live.phase': 'bidding', 'live.currentBid': a.live.currentBid, 'live.bidCount': a.live.bidCount },
-    { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt }, $inc: { 'live.bidCount': 1 } },
+    { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt, ...(extend ? { 'live.clockSeconds': a.settings.resetSeconds } : {}) }, $inc: { 'live.bidCount': 1 } },
   );
   if (!res.modifiedCount) throw new HttpError(409, 'Someone else bid first. Try again.');
   await Bid.create({ auction: a._id, player: a.live.player._id, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot, bidderName: bot ? null : (team.ownerName || null) });
-  setTimer(code, 'close', endsAt - now, () => closeLot(code, a.live.rev));
+  setTimer(code, 'close', endsAt - Date.now(), () => closeLot(code, a.live.rev));
   botKick(code);
-  await broadcast(code);
+  await broadcast(code, extend ? now : undefined);
 }
 
 async function pass(code, { teamId, clientId }) {

@@ -90,5 +90,6 @@ export function useCountdown() {
   const live = auction?.live;
   if (!live || live.phase !== 'bidding') return 0;
   if (auction.status === 'paused') return Math.ceil((live.remainingMs || 0) / 1000);
-  return Math.max(0, Math.ceil((new Date(live.endsAt).getTime() - now()) / 1000));
+  const left = Math.max(0, Math.ceil((new Date(live.endsAt).getTime() - now()) / 1000));
+  return live.clockSeconds ? Math.min(left, live.clockSeconds) : left; // never show more than the configured countdown
 }
