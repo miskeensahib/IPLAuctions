@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, fetchAllPlayers, store } from '../api';
 import { Avatar, Empty } from '../ui';
-import { cc, cr } from '../utils';
+import { cc } from '../utils';
 
 // The watchlist is stored in MongoDB (collection "watchlists") through /api/watchlist.
 // One shared in-memory copy keeps every star button on the page in sync.
@@ -54,7 +54,7 @@ export default function Watchlist() {
       {!players ? <p className="muted">Loading…</p> : !list.length ? <Empty>Star players from the Players page or the live card to track them here. Saved in the database.</Empty> : (
         <ul className="rows">
           {list.map((p) => (
-            <li key={p._id}><Avatar name={p.name} src={p.imageThumb} size={40} /><span className="grow"><b>{p.name}</b> <span className="code">{cc(p.country)}</span><br /><small className="muted">{p.role}</small></span><small className="muted">{p.soldPrice ? `Real: ${cr(p.soldPrice)} · ${p.soldTo}` : ''}</small><button className="btn ghost sm" onClick={() => wl.toggle(p._id)}>Remove</button></li>
+            <li key={p._id}><Avatar name={p.name} src={p.imageThumb} size={40} /><span className="grow"><b>{p.name}</b> <span className="code">{cc(p.country)}</span><br /><small className="muted">{p.role}</small></span><small className="muted">{p.team || ''}</small><button className="btn ghost sm" onClick={() => wl.toggle(p._id)}>Remove</button></li>
           ))}
         </ul>
       )}

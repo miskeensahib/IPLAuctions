@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
+import { useAuction } from '../state';
 import { Avatar, Empty, ErrorBox, Spinner, VerifyTag } from '../ui';
 import { cc, cr } from '../utils';
+import { useResults } from './Dashboard';
 import { useWatchlist } from './Watchlist';
 
 const ROLES = ['Batter', 'Bowler', 'All-rounder', 'Wicketkeeper', 'Unassigned'];
 
-function Detail({ p, onClose, wl }) {
+// Auction status shown only for what happened in THIS auction: sold (price + team), unsold, or nothing yet.
+function Detail({ p, onClose, wl, inAuction, result }) {
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-label={p.name} onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -21,13 +24,11 @@ function Detail({ p, onClose, wl }) {
           <div><dt>Country</dt><dd>{p.country}</dd></div>
           <div><dt>Base price</dt><dd>{p.basePrice ? cr(p.basePrice) : 'Estimated at auction time'}</dd></div>
           <div><dt>IPL team</dt><dd>{p.team || '—'}</dd></div>
-          <div><dt>IPL 2026 status</dt><dd>{p.auctionStatus === 'sold' ? 'Sold at the 2026 auction' : 'Not in the 2026 auction results'}</dd></div>
-          <div><dt>Bought by</dt><dd>{p.soldTo || '—'}</dd></div>
-          <div><dt>Final price</dt><dd>{p.soldPrice ? cr(p.soldPrice) : '—'}</dd></div>
+          {inAuction && <div><dt>Auction status</dt><dd>{result?.status === 'sold' ? `Sold to ${result.teamShort} for ${cr(result.price)}` : result?.status === 'unsold' ? 'Unsold' : 'Not auctioned yet'}</dd></div>}
           <div><dt>Previous team</dt><dd>{p.previousTeam || 'Not available'}</dd></div>
           <div><dt>Career stats</dt><dd>{p.stats && Object.keys(p.stats).length ? Object.entries(p.stats).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Not available'}</dd></div>
         </dl>
-        {p.source && <p className="muted small">Result source: <a href={p.source} target="_blank" rel="noreferrer">ipl.com</a></p>}
+        {p.source && <p className="muted small">Profile source: <a href={p.source} target="_blank" rel="noreferrer">iplt20.com</a></p>}
         <button className="btn primary block" onClick={() => wl.toggle(p._id)}>{wl.has(p._id) ? '★ Remove from watchlist' : '☆ Add to watchlist'}</button>
       </div>
     </div>
@@ -41,6 +42,9 @@ export default function Players() {
   const [err, setErr] = useState(null);
   const [sel, setSel] = useState(null);
   const wl = useWatchlist();
+  const { auction } = useAuction() || {}; // null outside an auction (the plain /players catalogue)
+  const results = useResults(auction);
+  const byPlayer = useMemo(() => new Map(results.map((r) => [String(r.player?._id), r])), [results]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -60,7 +64,7 @@ export default function Players() {
         <select value={f.role} onChange={set('role')} aria-label="Role"><option value="">All roles</option>{ROLES.map((r) => <option key={r}>{r}</option>)}</select>
         <select value={f.overseas} onChange={set('overseas')} aria-label="Nationality"><option value="">All nationalities</option><option value="false">Indian</option><option value="true">Overseas</option></select>
         <select value={f.team} onChange={set('team')} aria-label="IPL team"><option value="">All teams</option>{['CSK', 'MI', 'RCB', 'KKR', 'SRH', 'RR', 'PBKS', 'DC', 'LSG', 'GT'].map((t) => <option key={t}>{t}</option>)}</select>
-        <select value={f.sort} onChange={set('sort')} aria-label="Sort"><option value="marquee">Prominent first</option><option value="name">Name</option><option value="price">Price (high first)</option></select>
+        <select value={f.sort} onChange={set('sort')} aria-label="Sort"><option value="marquee">Prominent first</option><option value="name">Name</option></select>
       </div>
       {err ? <ErrorBox>{err}</ErrorBox> : !data ? <Spinner /> : !data.items.length ? <Empty>No players match.</Empty> : (
         <>
@@ -70,7 +74,11 @@ export default function Players() {
                 <button className="pcard" onClick={() => setSel(p)}>
                   <Avatar name={p.name} src={p.imageThumb} size={52} />
                   <span className="grow"><b>{p.name}</b> <span className="code">{cc(p.country)}</span><br /><small className="muted">{p.role}</small></span>
-                  <span className="pc-price"><small className="muted">{p.team || '—'}</small><b>{p.soldPrice ? cr(p.soldPrice) : ''}</b><small>{p.soldPrice ? 'Sold 2026' : ''}</small></span>
+                  <span className="pc-price">
+                    <small className="muted">{p.team || '—'}</small>
+                    {byPlayer.get(p._id)?.status === 'sold' && <><b>{cr(byPlayer.get(p._id).price)}</b><small>Sold · {byPlayer.get(p._id).teamShort}</small></>}
+                    {byPlayer.get(p._id)?.status === 'unsold' && <small className="unsold-tag">Unsold</small>}
+                  </span>
                 </button>
                 <button className="star" aria-label="Toggle watchlist" onClick={() => wl.toggle(p._id)}>{wl.has(p._id) ? '★' : '☆'}</button>
               </li>
@@ -83,7 +91,7 @@ export default function Players() {
           </div>
         </>
       )}
-      {sel && <Detail p={sel} wl={wl} onClose={() => setSel(null)} />}
+      {sel && <Detail p={sel} wl={wl} inAuction={!!auction} result={byPlayer.get(sel._id)} onClose={() => setSel(null)} />}
     </section>
   );
 }

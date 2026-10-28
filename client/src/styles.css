@@ -260,3 +260,5 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 .squad-actions.compact .btn { min-height: 38px; padding: 6px 12px; font-size: 13px; }
 .rows.big li { flex-wrap: wrap; }
 @media (max-width: 560px) { .rows.big li .squad-actions.compact { width: 100%; } .rows.big li .squad-actions.compact .btn { flex: 1; } }
+
+.unsold-tag { color: #fca5a5; font-weight: 600; }
