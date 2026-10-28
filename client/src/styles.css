@@ -225,3 +225,20 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 .admin-row { flex-wrap: wrap; }
 .admin-row .row-btns { flex-wrap: wrap; }
 @media (max-width: 560px) { .admin-row .right { text-align: left; width: 100%; } .admin-row .row-btns { width: 100%; } .admin-row .row-btns .btn { flex: 1; } }
+
+/* ---------- SOLD! popup ---------- */
+.sold-wrap { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .55); animation: sold-fade .18s ease-out; }
+.sold-pop { position: relative; overflow: hidden; width: min(560px, 100%); text-align: center; padding: clamp(18px, 5vw, 30px) 16px clamp(20px, 5vw, 32px);
+  border: 2px solid #232323; border-radius: 22px; background: radial-gradient(circle at 72% 28%, rgba(22, 120, 90, .45), transparent 42%), linear-gradient(180deg, #17642f, #12552a);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .65); animation: sold-pop .28s cubic-bezier(.2, 1.3, .4, 1); font-family: Roboto, Inter, system-ui, sans-serif; }
+.sold-title { font-weight: 800; font-size: clamp(48px, 15vw, 84px); line-height: 1; color: #0be36b; letter-spacing: .5px; }
+.sold-price { margin-top: clamp(14px, 4vw, 24px); font-weight: 700; font-size: clamp(32px, 9.5vw, 50px); color: #fff; line-height: 1.1; }
+.sold-team { margin-top: clamp(14px, 4vw, 26px); display: flex; align-items: center; justify-content: center; gap: clamp(12px, 3.5vw, 22px); }
+.sold-badge { display: inline-grid; place-items: center; width: clamp(56px, 15vw, 78px); height: clamp(56px, 15vw, 78px); border-radius: 18px; color: #fff; font-weight: 800; font-size: clamp(18px, 5vw, 26px); border: 1px solid rgba(255, 255, 255, .15); }
+.sold-city { font-weight: 700; font-size: clamp(32px, 9.5vw, 50px); color: #fff; line-height: 1.1; }
+.confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti i { position: absolute; top: -24px; display: block; opacity: .9; animation: conf-fall linear infinite; }
+@keyframes conf-fall { from { transform: translate3d(0, -20px, 0) rotate(0deg); } to { transform: translate3d(var(--dx, 0px), 440px, 0) rotate(560deg); } }
+@keyframes sold-pop { from { transform: scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sold-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }

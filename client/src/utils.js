@@ -24,3 +24,6 @@ export function roleCounts(players) {
   players.forEach((p) => { c[p.role] = (c[p.role] || 0) + 1; });
   return c;
 }
+
+// Franchise city shown on the SOLD! popup
+export const CITY = { CSK: 'Chennai', MI: 'Mumbai', RCB: 'Bengaluru', KKR: 'Kolkata', SRH: 'Hyderabad', RR: 'Rajasthan', PBKS: 'Punjab', DC: 'Delhi', LSG: 'Lucknow', GT: 'Gujarat' };

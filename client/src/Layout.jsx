@@ -4,6 +4,7 @@ import { logout } from './api';
 import { AuctionProvider, useAuction, useUserName } from './state';
 import { cr } from './utils';
 import { TeamBadge, Spinner, ErrorBox } from './ui';
+import SoldPopup from './SoldPopup';
 
 const I = ({ d }) => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
 const ICONS = {
@@ -64,6 +65,7 @@ function AuctionGate({ code }) {
     <>
       {!connected && <div className="banner warn">Live connection lost – retrying. Data refreshes every few seconds.</div>}
       <Outlet />
+      <SoldPopup />
     </>
   );
 }
