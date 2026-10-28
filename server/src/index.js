@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 const { connectDb } = require('./config/db');
 const engine = require('./engine/auctionEngine');
+const { requireAdmin } = require('./lib/http');
 const { seedAll } = require('./scripts/seed');
 
 const origins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173').split(',').map((s) => s.trim());
@@ -23,6 +24,8 @@ function buildApp() {
   const dbUp = () => mongoose.connection.readyState === 1;
   app.get('/api/health', (_req, res) => res.status(dbUp() ? 200 : 503).json({ ok: dbUp(), db: dbUp() ? 'connected' : 'disconnected', time: Date.now() }));
   app.use('/api', (_req, res, next) => (dbUp() ? next() : res.status(503).json({ error: 'Database is unavailable. Please try again shortly.' })));
+  // The admin screen calls this to check the key with the server (200 only for the correct ADMIN_KEY).
+  app.get('/api/admin/check', requireAdmin, (_req, res) => res.json({ ok: true }));
   app.use('/api/players', require('./routes/players'));
   app.use('/api/teams', require('./routes/teams'));
   app.use('/api/auctions', require('./routes/auctions'));

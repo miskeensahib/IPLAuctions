@@ -5,7 +5,7 @@ import Home, { Welcome } from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Players from './pages/Players';
 import Watchlist from './pages/Watchlist';
-import Admin, { Settings } from './pages/Admin';
+import Admin from './pages/Admin';
 import { Bids, History, Live, Reports, Squad, Teams } from './pages/AuctionPages';
 
 export default function App() {
@@ -18,7 +18,6 @@ export default function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/players" element={<Players />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/a/:code">
               <Route index element={<Dashboard />} />
               <Route path="live" element={<Live />} />

@@ -216,3 +216,7 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 .cp-head .panel-title { margin: 0; }
 .sound-btn { font-size: 18px; line-height: 1; flex: none; }
 .sound-btn.off { opacity: .7; border-color: #7f1d1d; }
+
+/* Admin panel tab bar */
+.admin-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.admin-bar .seg { flex: 1; margin: 0; min-width: 200px; }

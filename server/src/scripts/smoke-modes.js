@@ -129,6 +129,22 @@ async function newAuction(mode, settings, claim = 'MI') {
   assert.strictEqual(mine.isBot, true); assert.strictEqual(mine.ownerName, null);
   assert.strictEqual((await bid()).status, 403, 'logged-out client can no longer bid');
 
+  // --- admin key check ---
+  assert.strictEqual((await call('GET', '/api/admin/check')).status, 401, 'no key rejected');
+  const adminCall = async (key) => { const r = await fetch(base + '/api/admin/check', { headers: { 'x-admin-key': key } }); return r.status; };
+  assert.strictEqual(await adminCall('wrong'), 401, 'wrong key rejected');
+  assert.strictEqual(await adminCall('test-key'), 200, 'correct key accepted');
+  assert.strictEqual((await fetch(base + '/api/auctions/modes/mini', { method: 'PUT', headers: { 'content-type': 'application/json', 'x-client-id': HOST }, body: '{"purse":1}' })).status, 401, 'presets cannot be changed without the key');
+
+  // --- preset validation + admin save ---
+  const put = (body, key = 'test-key') => fetch(base + '/api/auctions/modes/rapid', { method: 'PUT', headers: { 'content-type': 'application/json', 'x-admin-key': key }, body: JSON.stringify(body) });
+  assert.strictEqual((await put({ initialSeconds: 1015 })).status, 400, 'absurd timer rejected');
+  assert.strictEqual((await put({ minSquad: 20, maxSquad: 10 })).status, 400, 'min > max rejected');
+  assert.strictEqual((await put({ poolOrder: 'bogus' })).status, 400, 'bad order rejected');
+  const okPut = await put({ initialSeconds: 15 }); assert.strictEqual(okPut.status, 200);
+  assert.strictEqual((await okPut.json()).initialSeconds, 15, 'valid preset saved');
+  assert.strictEqual((await call('GET', '/api/auctions/modes')).body.find((x) => x.key === 'rapid').initialSeconds, 15, 'saved value read back from the database');
+
   console.log('OK modes');
   process.exit(0);
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

@@ -94,7 +94,6 @@ export default function Layout() {
       ['players', 'Players', '/players'],
     ]),
     // The Admin Panel is deliberately not listed in any menu: it is reached only by typing /admin in the address bar.
-    ['reports', 'Settings', '/settings'],
   ];
   const mobile = base
     ? [['dash', 'Dashboard', base, true], ['players', 'Players', `${base}/players`], ['live', 'Auction', `${base}/live`], ['teams', 'Squad', `${base}/squad`]]

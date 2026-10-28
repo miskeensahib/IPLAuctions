@@ -7,9 +7,52 @@ import { cr } from '../utils';
 const ROLES = ['Batter', 'Bowler', 'All-rounder', 'Wicketkeeper', 'Unassigned'];
 const blank = { name: '', country: 'India', role: 'Unassigned', basePrice: '', soldTo: '', soldPrice: '', auctionStatus: 'upcoming', profileVerified: false, basePriceVerified: false };
 
+// Admin Panel: reached only by typing /admin. Everything inside (Players and Settings) needs the ADMIN_KEY,
+// which the server checks (GET /api/admin/check); the server also re-checks it on every admin action.
 export default function Admin() {
-  const [key, setKey] = useState(adminKey.get());
-  const [unlocked, setUnlocked] = useState(false);
+  const toast = useToast();
+  const [key, setKey] = useState('');
+  const [state, setState] = useState(adminKey.get() ? 'checking' : 'locked'); // locked | checking | open
+  const [tab, setTab] = useState('players');
+
+  const verify = async (k) => {
+    adminKey.set(k);
+    try { await api('/admin/check', { admin: true }); setState('open'); }
+    catch (er) { adminKey.set(''); setState('locked'); throw er; } // fails closed: any error keeps it locked
+  };
+  useEffect(() => { if (state === 'checking') verify(adminKey.get()).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const unlock = async (e) => {
+    e.preventDefault();
+    try { await verify(key.trim()); setKey(''); } catch (er) { toast.err(er.message); }
+  };
+  const lock = () => { adminKey.set(''); setState('locked'); };
+
+  if (state === 'checking') return <Spinner label="Checking admin session…" />;
+  if (state === 'locked') {
+    return (
+      <form className="panel narrow" onSubmit={unlock}>
+        <h3 className="panel-title">ADMIN LOGIN</h3>
+        <p className="muted">Enter the admin key to manage players and auction settings.</p>
+        <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="Admin key" aria-label="Admin key" autoComplete="off" />
+        <button className="btn primary block" disabled={!key.trim()}>LOGIN</button>
+      </form>
+    );
+  }
+  return (
+    <div className="stack">
+      <div className="panel admin-bar">
+        <div className="seg" role="tablist" aria-label="Admin sections">
+          <button role="tab" aria-selected={tab === 'players'} className={tab === 'players' ? 'on' : ''} onClick={() => setTab('players')}>Players</button>
+          <button role="tab" aria-selected={tab === 'settings'} className={tab === 'settings' ? 'on' : ''} onClick={() => setTab('settings')}>Settings</button>
+        </div>
+        <button className="btn ghost sm" onClick={lock}>Log out of Admin</button>
+      </div>
+      {tab === 'players' ? <PlayersAdmin /> : <Settings />}
+    </div>
+  );
+}
+
+function PlayersAdmin() {
   const toast = useToast();
   const [players, setPlayers] = useState(null);
   const [form, setForm] = useState(blank);
@@ -18,14 +61,7 @@ export default function Admin() {
   const [q, setQ] = useState('');
 
   const load = () => api(`/players?limit=200&q=${encodeURIComponent(q)}`).then((r) => setPlayers(r.items)).catch((e) => toast.err(e.message));
-  useEffect(() => { if (unlocked) load(); }, [unlocked, q]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const unlock = async (e) => {
-    e.preventDefault(); adminKey.set(key);
-    try { await api('/players/bulk', { method: 'POST', admin: true, body: { players: [] } }); }
-    catch (er) { if (/Invalid admin key|not configured/.test(er.message)) return toast.err(er.message); }
-    setUnlocked(true);
-  };
+  useEffect(() => { load(); }, [q]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const payload = (f) => ({ ...f, basePrice: f.basePrice === '' || f.basePrice == null ? null : Math.round(Number(f.basePrice) * 100), soldPrice: f.soldPrice === '' || f.soldPrice == null ? null : Math.round(Number(f.soldPrice) * 100), soldTo: f.soldTo || null });
   const save = async (e) => {
@@ -47,18 +83,8 @@ export default function Admin() {
   };
   const f = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
-  if (!unlocked) {
-    return (
-      <form className="panel narrow" onSubmit={unlock}>
-        <h3 className="panel-title">ADMIN PANEL</h3>
-        <p className="muted">Enter the ADMIN_KEY configured on the server to manage players.</p>
-        <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="Admin key" aria-label="Admin key" autoComplete="off" />
-        <button className="btn primary block">UNLOCK</button>
-      </form>
-    );
-  }
   return (
-    <div className="stack">
+    <>
       <form className="panel" onSubmit={save}>
         <h3 className="panel-title">{editing ? 'EDIT PLAYER' : 'ADD PLAYER'}</h3>
         <div className="adv">
@@ -95,15 +121,16 @@ export default function Admin() {
           </ul>
         )}
       </section>
-    </div>
+    </>
   );
 }
 
-export function Settings() {
+// Default rules for each auction mode (stored in MongoDB). Only rendered inside the unlocked Admin Panel.
+function Settings() {
   const toast = useToast();
   const [modes, setModes] = useState(null);
   const [draft, setDraft] = useState({});
-  useEffect(() => { api('/auctions/modes').then(setModes); }, []);
+  useEffect(() => { api('/auctions/modes').then(setModes).catch((e) => toast.err(e.message)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!modes) return <Spinner />;
   const save = async (m) => {
     const d = draft[m.key] || {};
@@ -114,18 +141,18 @@ export function Settings() {
     } catch (e) { toast.err(e.message); }
   };
   const fld = (m, k, label, scale = 1) => (
-    <label className="field"><span>{label}</span><input type="number" min="0" step={scale === 100 ? 5 : 1} value={draft[m.key]?.[k] ?? m[k] / scale} onChange={(e) => setDraft({ ...draft, [m.key]: { ...draft[m.key], [k]: e.target.value } })} /></label>
+    <label className="field"><span>{label}</span><input type="number" min="0" step={scale === 100 ? 5 : 1} value={draft[m.key]?.[k] ?? (m[k] ?? 0) / scale} onChange={(e) => setDraft({ ...draft, [m.key]: { ...draft[m.key], [k]: e.target.value } })} /></label>
   );
   return (
-    <div className="stack">
-      <p className="muted">Default rules for each auction mode. Saving requires the admin key (open /admin and enter the admin key first). Existing auctions keep their own rules.</p>
+    <>
+      <p className="muted">Default rules for each auction mode. Existing auctions keep their own rules.</p>
       {modes.map((m) => (
         <section className="panel" key={m.key}>
           <h3 className="panel-title">{m.label.toUpperCase()}</h3>
-          <div className="adv">{fld(m, 'purse', 'Purse (Cr)', 100)}{fld(m, 'maxSquad', 'Max squad')}{fld(m, 'maxOverseas', 'Max overseas')}{fld(m, 'initialSeconds', 'Timer (s)')}{fld(m, 'resetSeconds', 'Bid reset (s)')}{fld(m, 'poolSize', 'Pool size')}</div>
+          <div className="adv">{fld(m, 'purse', 'Purse (Cr)', 100)}{fld(m, 'minSquad', 'Min squad')}{fld(m, 'maxSquad', 'Max squad')}{fld(m, 'maxOverseas', 'Max overseas')}{fld(m, 'initialSeconds', 'Timer (s)')}{fld(m, 'resetSeconds', 'Bid reset (s)')}{fld(m, 'poolSize', 'Pool size')}</div>
           <button className="btn ghost" onClick={() => save(m)}>Save preset</button>
         </section>
       ))}
-    </div>
+    </>
   );
 }
