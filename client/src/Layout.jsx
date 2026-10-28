@@ -93,12 +93,12 @@ export default function Layout() {
       ['home', 'Home', '/home', true],
       ['players', 'Players', '/players'],
     ]),
-    ['admin', 'Admin Panel', '/admin'],
+    // The Admin Panel is deliberately not listed in any menu: it is reached only by typing /admin in the address bar.
     ['reports', 'Settings', '/settings'],
   ];
   const mobile = base
     ? [['dash', 'Dashboard', base, true], ['players', 'Players', `${base}/players`], ['live', 'Auction', `${base}/live`], ['teams', 'Squad', `${base}/squad`]]
-    : [['home', 'Home', '/home', true], ['players', 'Players', '/players'], ['admin', 'Admin', '/admin']];
+    : [['home', 'Home', '/home', true], ['players', 'Players', '/players']];
 
   const links = (items, cls) => items.map(([ic, label, to, end]) => (
     <NavLink key={label} to={to} end={end} onClick={close} className={({ isActive }) => `${cls}${isActive ? ' active' : ''}`}>

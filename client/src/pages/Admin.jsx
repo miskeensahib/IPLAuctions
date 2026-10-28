@@ -118,7 +118,7 @@ export function Settings() {
   );
   return (
     <div className="stack">
-      <p className="muted">Default rules for each auction mode. Saving requires the admin key (unlock the Admin Panel first). Existing auctions keep their own rules.</p>
+      <p className="muted">Default rules for each auction mode. Saving requires the admin key (open /admin and enter the admin key first). Existing auctions keep their own rules.</p>
       {modes.map((m) => (
         <section className="panel" key={m.key}>
           <h3 className="panel-title">{m.label.toUpperCase()}</h3>
