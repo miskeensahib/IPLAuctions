@@ -242,3 +242,21 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 @keyframes sold-pop { from { transform: scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sold-fade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
+
+/* ---------- Squad card + Save / Share ---------- */
+.squad-card { background: #10152e; }
+.sc-stats { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: #171c38; border-radius: 10px; padding: 12px 14px; font-size: 14px; color: #c9cfee; }
+.sc-os b { color: #a78bfa; } .sc-purse b { color: #34d399; } .sc-spent b { color: #fbbf24; }
+.sc-bought { color: #34d399; font-weight: 700; margin: 16px 0 4px; }
+.sc-group { color: #22a06b; font-size: 12px; font-weight: 700; letter-spacing: .6px; margin: 14px 0 6px; }
+.sc-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #1b2140; border-radius: 8px; padding: 12px 14px; margin-bottom: 6px; font-weight: 600; }
+.sc-row b { color: #34d399; white-space: nowrap; }
+.sc-os-ic { font-style: normal; color: #a78bfa; margin-left: 8px; }
+.squad-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.squad-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; font-weight: 600; letter-spacing: 0; }
+.squad-actions .save { background: #23283f; border-color: #343b5c; }
+.squad-actions .share { background: #123a52; border-color: #1b5675; color: #cfeaff; }
+.squad-actions.compact { display: inline-flex; gap: 6px; margin: 0; }
+.squad-actions.compact .btn { min-height: 38px; padding: 6px 12px; font-size: 13px; }
+.rows.big li { flex-wrap: wrap; }
+@media (max-width: 560px) { .rows.big li .squad-actions.compact { width: 100%; } .rows.big li .squad-actions.compact .btn { flex: 1; } }

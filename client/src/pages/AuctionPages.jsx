@@ -6,6 +6,8 @@ import { Avatar, Empty, TeamBadge } from '../ui';
 import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, roleCounts } from '../utils';
 import { BidHistory, CurrentPlayer, TeamPanel, useResults, useSquads } from './Dashboard';
 import Lobby from './Lobby';
+import SquadActions from '../SquadActions';
+import { groupSquad } from '../squadImage';
 
 export function Live() {
   const { auction, myTeam } = useAuction();
@@ -26,6 +28,7 @@ export function Live() {
 
 export function Teams() {
   const { auction, myTeamId } = useAuction();
+  const squads = useSquads(auction);
   return (
     <section className="panel">
       <h3 className="panel-title">TEAMS</h3>
@@ -35,6 +38,7 @@ export function Teams() {
             <TeamBadge short={t.short} color={t.color} size={44} />
             <span className="grow"><b>{t.name}</b><br /><small className="muted">{t.overseas} overseas · {t.isBot ? 'Bot' : t.ownerName}</small></span>
             <span className="right"><b className="green">{cr(t.purse)}</b><br /><small className="muted">{t.count} / {auction.settings.maxSquad}{auction.settings.minSquad ? ` · min ${auction.settings.minSquad}` : ''}</small></span>
+            <SquadActions compact team={t} players={squads.find((s) => s.team.short === t.short)?.players || []} />
           </li>
         ))}
       </ul>
@@ -64,6 +68,23 @@ export function Squad() {
         {!shown.length ? <Empty>No players yet.</Empty> : (
           <ul className="rows">{shown.map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={40} /><span className="grow"><b>{x.player.name}</b> <span className="code">{cc(x.player.country)}</span><br /><small className="muted">{x.player.role}</small></span><b className="blue">{cr(x.price)}</b></li>)}</ul>
         )}
+      </section>
+
+      <section className="panel squad-card" aria-label={`${sel.name} squad card`}>
+        <h3 className="panel-title">SQUAD CARD · {sel.short}</h3>
+        <div className="sc-stats">
+          <span className="sc-os">OS: <b>{sel.overseas}</b></span>
+          <span className="sc-purse">Purse: <b>{(sel.purse / 100).toFixed(1)} Cr</b></span>
+          <span className="sc-spent">Spent: <b>{(sel.spent / 100).toFixed(1)} Cr</b></span>
+        </div>
+        <div className="sc-bought">Bought ({sq.length})</div>
+        {!sq.length ? <Empty>No players bought yet.</Empty> : groupSquad(sq).map((g) => (
+          <div key={g.key}>
+            <div className="sc-group">{g.label} ({g.items.length})</div>
+            {g.items.map((x) => <div className="sc-row" key={x.player._id}><span>{x.player.name}{x.player.isOverseas && <i className="sc-os-ic" title="Overseas" aria-label="Overseas">◍</i>}</span><b>{(x.price / 100).toFixed(1)} Cr</b></div>)}
+          </div>
+        ))}
+        <SquadActions team={sel} players={sq} />
       </section>
     </div>
   );
