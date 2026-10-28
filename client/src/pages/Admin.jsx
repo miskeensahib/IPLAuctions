@@ -3,6 +3,7 @@ import { adminKey, api } from '../api';
 import { useToast } from '../state';
 import { Spinner, VerifyTag } from '../ui';
 import { cr } from '../utils';
+import AuctionsAdmin from './AdminAuctions';
 
 const ROLES = ['Batter', 'Bowler', 'All-rounder', 'Wicketkeeper', 'Unassigned'];
 const blank = { name: '', country: 'India', role: 'Unassigned', basePrice: '', soldTo: '', soldPrice: '', auctionStatus: 'upcoming', profileVerified: false, basePriceVerified: false };
@@ -43,11 +44,12 @@ export default function Admin() {
       <div className="panel admin-bar">
         <div className="seg" role="tablist" aria-label="Admin sections">
           <button role="tab" aria-selected={tab === 'players'} className={tab === 'players' ? 'on' : ''} onClick={() => setTab('players')}>Players</button>
+          <button role="tab" aria-selected={tab === 'auctions'} className={tab === 'auctions' ? 'on' : ''} onClick={() => setTab('auctions')}>Auctions</button>
           <button role="tab" aria-selected={tab === 'settings'} className={tab === 'settings' ? 'on' : ''} onClick={() => setTab('settings')}>Settings</button>
         </div>
         <button className="btn ghost sm" onClick={lock}>Log out of Admin</button>
       </div>
-      {tab === 'players' ? <PlayersAdmin /> : <Settings />}
+      {tab === 'players' ? <PlayersAdmin /> : tab === 'auctions' ? <AuctionsAdmin /> : <Settings />}
     </div>
   );
 }

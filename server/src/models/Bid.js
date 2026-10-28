@@ -5,4 +5,5 @@ module.exports = model('Bid', new Schema({
   player: { type: Schema.Types.ObjectId, ref: 'Player' },
   team: { type: Schema.Types.ObjectId, ref: 'Team' },
   teamShort: String, amount: Number, byBot: Boolean,
+  bidderName: { type: String, default: null }, // display name of the person who bid (null for bots)
 }, { timestamps: true }));

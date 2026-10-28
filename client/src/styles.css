@@ -98,7 +98,7 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 .welcome { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(600px 400px at 50% 0, #3b1f8f66, transparent); }
 .login-card { width: min(400px, 100%); display: flex; flex-direction: column; gap: 8px; text-align: center; background: linear-gradient(180deg, #111a3f, #0a1030); border: 1px solid var(--line2); border-radius: 18px; padding: 28px 22px; box-shadow: 0 0 60px #6d28d933; }
 .login-card h2 { font-size: 22px; } .login-card label { text-align: left; font-size: 12px; color: var(--muted); }
-.home, .lobby { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; align-items: start; } .home .panel + .panel, .lobby .panel + .panel { margin-top: 0; }
+.home, div.lobby { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; align-items: start; } .home .panel + .panel, .lobby .panel + .panel { margin-top: 0; }
 .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .mode { text-align: left; background: #0a1131; border: 1px solid var(--line2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px; } .mode span { font-size: 13px; color: #b5bfe8; } .mode small { color: var(--muted); font-size: 11px; }
 .mode.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; background: #17194a; }
@@ -166,7 +166,7 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
   .content { padding: 12px 12px 90px; }
   .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 15; background: #070c26f2; backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); flex-direction: row; gap: 0; }
   .bn-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; font-size: 10px; color: var(--muted); background: none; border: 0; min-height: 52px; } .bn-item.active { color: var(--gold); }
-  .home, .lobby { grid-template-columns: 1fr; }
+  .home, div.lobby { grid-template-columns: 1fr; }
   .grid3 { grid-template-columns: 1fr; } .col-main { order: -1; } .col-players .plist { max-height: 300px; }
   .grid-bottom { grid-template-columns: 1fr; }
   .toasts { bottom: 74px; left: 12px; right: 12px; }
@@ -220,3 +220,8 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 /* Admin panel tab bar */
 .admin-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .admin-bar .seg { flex: 1; margin: 0; min-width: 200px; }
+
+/* Admin auctions list */
+.admin-row { flex-wrap: wrap; }
+.admin-row .row-btns { flex-wrap: wrap; }
+@media (max-width: 560px) { .admin-row .right { text-align: left; width: 100%; } .admin-row .row-btns { width: 100%; } .admin-row .row-btns .btn { flex: 1; } }

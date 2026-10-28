@@ -145,6 +145,59 @@ async function newAuction(mode, settings, claim = 'MI') {
   assert.strictEqual((await okPut.json()).initialSeconds, 15, 'valid preset saved');
   assert.strictEqual((await call('GET', '/api/auctions/modes')).body.find((x) => x.key === 'rapid').initialSeconds, 15, 'saved value read back from the database');
 
+  // --- admin: auctions CRUD + bid log ---
+  const adm = async (method, path, body, key = 'test-key') => { const r = await fetch(base + '/api/admin' + path, { method, headers: { 'content-type': 'application/json', 'x-client-id': HOST, 'x-admin-key': key }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json().catch(() => ({})) }; };
+  assert.strictEqual((await adm('GET', '/auctions', null, 'nope')).status, 401, 'auction admin needs the key');
+  assert.strictEqual((await adm('DELETE', '/auctions/XXXXXX', null, 'nope')).status, 401);
+  // CREATE
+  const mk = await adm('POST', '/auctions', { name: 'Admin Made', mode: 'mini', play: 'multi', hostName: 'Boss' });
+  assert.strictEqual(mk.status, 201); const acode = mk.body.code;
+  // READ list + detail
+  let lst = (await adm('GET', '/auctions')).body;
+  const row = lst.find((x) => x.code === acode);
+  assert(row && row.name === 'Admin Made' && row.status === 'lobby' && row.poolTotal === 274 && row.bids === 0, 'new auction listed');
+  assert(lst.find((x) => x.code === m.code).bids >= 1 && lst.find((x) => x.code === m.code).bidsByUsers >= 1, 'bid counts per auction');
+  // UPDATE (lobby): name, host, rules -> teams get the new purse
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { name: '  Renamed  ', hostName: 'Boss2', purse: 8000, maxSquad: 15 })).status, 200);
+  let det = (await adm('GET', `/auctions/${acode}`)).body;
+  assert.deepStrictEqual([det.name, det.hostName, det.settings.purse, det.settings.maxSquad], ['Renamed', 'Boss2', 8000, 15]);
+  assert.strictEqual(det.poolTotal, 274, 'detail reports the pool size');
+  assert(det.teams.every((t) => t.purse === 8000) && det.teams.every((t) => t.ownerId === undefined), 'purses follow the new rule; owner ids not exposed');
+  // validation
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { purse: 5 })).status, 400);
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { name: '   ' })).status, 400);
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, {})).status, 400);
+  assert.strictEqual((await adm('PUT', `/auctions/NOPE00`, { name: 'x' })).status, 404);
+  // BID LOG: the earlier human bid (mega auction m) records the user's name; bots have none
+  const log = (await adm('GET', `/auctions/${m.code}/bids?limit=100`)).body;
+  assert(log.total >= 1 && log.items.every((b) => b.player && b.player.name), 'bid log has player names');
+  const humanBids = log.items.filter((b) => !b.byBot);
+  assert(humanBids.length >= 1 && humanBids.every((b) => b.bidderName === 'T' && b.teamShort === 'MI'), 'human bids carry the bidder name');
+  assert((await adm('GET', `/auctions/${m.code}/bids?human=true`)).body.items.every((b) => !b.byBot), 'human-only filter');
+  assert((await adm('GET', `/auctions/${m.code}/bids?team=MI`)).body.items.every((b) => b.teamShort === 'MI'), 'team filter');
+  assert((await adm('GET', `/auctions/${m.code}/bids?q=zzzznoplayer`)).body.total === 0, 'player-name filter');
+  // rules locked once started; timers still editable; finished = rename only
+  await call('POST', `/api/auctions/${acode}/claim`, { teamId: det.teams[0].team, name: 'Zed' });
+  assert.strictEqual((await call('POST', `/api/auctions/${acode}/start`)).status, 200);
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { purse: 9000 })).status, 409, 'purse locked after start');
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { initialSeconds: 12, resetSeconds: 12 })).status, 200, 'timers editable while running');
+  assert.strictEqual((await adm('POST', `/auctions/${acode}/end`)).status, 200, 'admin can end a running auction');
+  assert.strictEqual((await adm('GET', `/auctions/${acode}`)).body.status, 'completed');
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { initialSeconds: 9 })).status, 409, 'finished auction: no rule edits');
+  assert.strictEqual((await adm('PUT', `/auctions/${acode}`, { name: 'Done' })).status, 200, 'finished auction can still be renamed');
+  // DELETE cascades
+  const AuctionModel = require('../models/Auction'), BidM = require('../models/Bid'), ResM = require('../models/AuctionResult'), SqM = require('../models/Squad');
+  const doc = await AuctionModel.findOne({ code: m.code }).select('_id').lean();
+  const before = [await BidM.countDocuments({ auction: doc._id }), await ResM.countDocuments({ auction: doc._id })];
+  assert(before[0] >= 1, 'there is something to delete');
+  const del = await adm('DELETE', `/auctions/${m.code}`);
+  assert.strictEqual(del.status, 200); assert.strictEqual(del.body.removed.bids, before[0]);
+  assert.strictEqual(await AuctionModel.countDocuments({ code: m.code }), 0);
+  assert.deepStrictEqual([await BidM.countDocuments({ auction: doc._id }), await ResM.countDocuments({ auction: doc._id }), await SqM.countDocuments({ auction: doc._id })], [0, 0, 0], 'bids/results/squads removed with it');
+  assert.strictEqual((await call('GET', `/api/auctions/${m.code}`)).status, 404, 'deleted auction is gone for everyone');
+  assert.strictEqual((await adm('DELETE', `/auctions/${m.code}`)).status, 404, 'deleting twice is a clean 404');
+  await adm('DELETE', `/auctions/${acode}`);
+
   console.log('OK modes');
   process.exit(0);
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

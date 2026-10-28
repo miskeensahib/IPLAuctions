@@ -26,6 +26,7 @@ function buildApp() {
   app.use('/api', (_req, res, next) => (dbUp() ? next() : res.status(503).json({ error: 'Database is unavailable. Please try again shortly.' })));
   // The admin screen calls this to check the key with the server (200 only for the correct ADMIN_KEY).
   app.get('/api/admin/check', requireAdmin, (_req, res) => res.json({ ok: true }));
+  app.use('/api/admin', require('./routes/admin'));
   app.use('/api/players', require('./routes/players'));
   app.use('/api/teams', require('./routes/teams'));
   app.use('/api/auctions', require('./routes/auctions'));

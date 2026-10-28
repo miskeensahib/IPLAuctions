@@ -53,7 +53,8 @@ export function AuctionProvider({ code, children }) {
     const onUpdate = (a) => { if (a.code === code) apply(a); };
     const onConn = () => { setConnected(true); socket.emit('auction:join', code); };
     const onDisc = () => setConnected(false);
-    socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc);
+    const onDeleted = (d) => { if (d.code === code) setError('This auction was removed by an admin'); };
+    socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc); socket.on('auction:deleted', onDeleted);
     socket.connect();
     if (socket.connected) onConn();
     // Fallback polling keeps the page correct if the websocket is blocked.
@@ -61,7 +62,7 @@ export function AuctionProvider({ code, children }) {
     return () => {
       alive = false; clearInterval(poll);
       socket.emit('auction:leave', code);
-      socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc);
+      socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc); socket.off('auction:deleted', onDeleted);
     };
   }, [code, apply]);
 

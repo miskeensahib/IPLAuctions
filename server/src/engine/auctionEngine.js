@@ -246,7 +246,7 @@ async function placeBid(code, { teamId, clientId, amount, bot = false }) {
     { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt }, $inc: { 'live.bidCount': 1 } },
   );
   if (!res.modifiedCount) throw new HttpError(409, 'Someone else bid first. Try again.');
-  await Bid.create({ auction: a._id, player: a.live.player._id, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot });
+  await Bid.create({ auction: a._id, player: a.live.player._id, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot, bidderName: bot ? null : (team.ownerName || null) });
   setTimer(code, 'close', endsAt - now, () => closeLot(code, a.live.rev));
   botKick(code);
   await broadcast(code);
@@ -386,4 +386,17 @@ async function recover() {
   if (live.length) console.log(`[engine] resumed ${live.length} live auction(s)`);
 }
 
-module.exports = { init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
+// Admin: remove an auction and everything recorded for it; stops its timers and tells anyone still watching.
+async function deleteAuction(code) {
+  const a = await Auction.findOne({ code }).select('_id').lean();
+  if (!a) return null;
+  clearTimers(code);
+  const [bids, results, squads] = await Promise.all([
+    Bid.deleteMany({ auction: a._id }), AuctionResult.deleteMany({ auction: a._id }), Squad.deleteMany({ auction: a._id }),
+  ]);
+  await Auction.deleteOne({ _id: a._id });
+  if (io) io.to(`auction:${code}`).emit('auction:deleted', { code });
+  return { bids: bids.deletedCount, results: results.deletedCount, squads: squads.deletedCount };
+}
+
+module.exports = { deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
