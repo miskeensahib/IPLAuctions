@@ -26,6 +26,7 @@ module.exports = model('Auction', new Schema({
     highestTeam: { type: Schema.Types.ObjectId, default: null },
     bidCount: { type: Number, default: 0 },
     endsAt: Date, remainingMs: Number,
+    overseas: Boolean, // is the player on the block overseas (saved with the lot so a bid needs no extra player lookup)
     clockSeconds: Number, // length of the countdown the current endsAt was set from (the screen never shows more than this)
     passed: [Schema.Types.ObjectId],
     phase: { type: String, enum: ['bidding', 'closed'], default: 'closed' },

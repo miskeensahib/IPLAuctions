@@ -44,11 +44,14 @@ export function AuctionProvider({ code, children }) {
   // A pause/resume the host just clicked stays on screen until the server confirms it. Without this, an update that
   // was already on its way (for example a bot's bid) would flip the screen back for a moment.
   const hold = useRef(null); // { status, live, until }
-  const apply = useCallback((a) => {
+  const apply = useCallback((a, force) => {
     offset.current = a.serverNow - Date.now();
     const h = hold.current;
     if (h && Date.now() < h.until && a.status !== h.status && (a.status === 'live' || a.status === 'paused')) a = { ...a, status: h.status, live: { ...a.live, ...h.live } };
-    setAuction((prev) => (prev && prev.updatedAt > a.updatedAt ? prev : a));
+    setAuction((prev) => {
+      if (!force && prev && prev.live && a.live && prev.live.rev === a.live.rev && prev.live.bidCount > a.live.bidCount) return prev; // a slower, older update must not undo a newer bid already shown
+      return prev && prev.updatedAt > a.updatedAt && !force ? prev : a;
+    });
   }, []);
   const holdStatus = useCallback((h) => { hold.current = h ? { ...h, until: Date.now() + 8000 } : null; }, []);
 
@@ -60,11 +63,18 @@ export function AuctionProvider({ code, children }) {
     const onConn = () => { setConnected(true); socket.emit('auction:join', code); };
     const onDisc = () => setConnected(false);
     // instant pause/resume message: merge into the current state (ignored if it belongs to another lot)
+    // Instant messages from the server: a pause/resume (has status) or a new bid (has bid). They are merged into the
+    // current state; one for another lot, or older than what is already shown, is ignored.
     const onPatch = (p) => {
       if (p.code !== code) return;
-      hold.current = null; // the server has confirmed: from here on its word is final
+      if (p.status) hold.current = null; // the server has confirmed the pause/resume: from here on its word is final
       offset.current = p.serverNow - Date.now();
-      setAuction((prev) => (prev && prev.live && prev.live.rev === p.live?.rev ? { ...prev, status: p.status, live: { ...prev.live, ...p.live } } : prev));
+      setAuction((prev) => {
+        if (!prev || !prev.live || prev.live.rev !== p.live?.rev) return prev;
+        if (p.live.bidCount !== undefined && prev.live.bidCount > p.live.bidCount) return prev;
+        const bids = p.bid ? [p.bid, ...(prev.bids || []).filter((b) => b._id !== p.bid._id && !String(b._id).startsWith('opt-'))].slice(0, 8) : prev.bids;
+        return { ...prev, ...(p.status ? { status: p.status } : {}), live: { ...prev.live, ...p.live }, bids };
+      });
     };
     const onDeleted = (d) => { if (d.code === code) setError('This auction was removed by an admin'); };
     socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc); socket.on('auction:deleted', onDeleted); socket.on('auction:patch', onPatch);
@@ -91,7 +101,7 @@ export function AuctionProvider({ code, children }) {
   const myTeam = auction?.teams.find((t) => t.team === myTeamId) || null;
   const now = () => Date.now() + offset.current;
 
-  const value = { patchAuction: setAuction, holdStatus, code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, now, refresh: () => api(`/auctions/${code}`).then(apply) };
+  const value = { patchAuction: setAuction, holdStatus, code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, now, refresh: () => api(`/auctions/${code}`).then((a) => apply(a, true)) };
   return <AuctionCtx.Provider value={value}>{children}</AuctionCtx.Provider>;
 }
 

@@ -82,7 +82,21 @@ export function CurrentPlayer({ compact }) {
     catch (e) { holdStatus(null); toast.err(e.message); refresh().catch(() => {}); }
     finally { holdStatus(null); toggling.current = false; }
   };
-  const bid = (amount) => act('bid', { teamId: myTeam.team, amount });
+  // Bid: the screen shows your team, the new amount and the reset clock the instant you click; the server confirms
+  // right after (and the screen is corrected if it says no, e.g. someone bid a moment earlier).
+  const bid = async (amount) => {
+    const base = auction.live;
+    const amt = amount == null ? minBid(base) : Math.round(Number(amount));
+    const s = auction.settings;
+    const impossible = !Number.isFinite(amt) || amt < minBid(base) || amt > myTeam.purse || myTeam.count >= s.maxSquad || (base.player?.isOverseas && myTeam.overseas >= s.maxOverseas);
+    if (impossible) return act('bid', { teamId: myTeam.team, amount }); // let the server explain, nothing to show first
+    const t = now();
+    const extend = t + s.resetSeconds * 1000 > new Date(base.endsAt).getTime();
+    const row = { _id: `opt-${base.rev}-${base.bidCount + 1}`, team: myTeam.team, teamShort: myTeam.short, amount: amt, byBot: false, bidderName: myTeam.ownerName, createdAt: new Date(t).toISOString() };
+    patchAuction((a) => (a && a.live ? { ...a, live: { ...a.live, currentBid: amt, highestTeam: myTeam.team, bidCount: a.live.bidCount + 1, ...(extend ? { endsAt: new Date(t + s.resetSeconds * 1000).toISOString(), clockSeconds: s.resetSeconds } : {}) }, bids: [row, ...(a.bids || [])].slice(0, 8) } : a));
+    try { await api(`/auctions/${auction.code}/bid`, { method: 'POST', body: { teamId: myTeam.team, amount } }); }
+    catch (e) { toast.err(e.message); refresh().catch(() => {}); }
+  };
   const reason = !myTeam ? 'Pick a team first' : !bidding ? 'Bidding is closed' : live.highestTeam === myTeam.team ? 'You lead the bidding' : (live.passed || []).includes(myTeam.team) ? 'You passed' : '';
   const canBid = !reason && !busy;
 

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Auction = require('../models/Auction');
 const AuctionSetting = require('../models/AuctionSetting');
 const Player = require('../models/Player');
@@ -170,7 +171,7 @@ async function nextLot(code) {
   await Auction.updateOne({ _id: a._id }, {
     $set: {
       poolIndex: idx,
-      live: { player: player._id, basePrice: baseOf(player), currentBid: 0, highestTeam: null, bidCount: 0, endsAt, clockSeconds: a.settings.initialSeconds, passed: [], phase: 'bidding', rev, lastResult: null },
+      live: { player: player._id, basePrice: baseOf(player), currentBid: 0, highestTeam: null, bidCount: 0, endsAt, clockSeconds: a.settings.initialSeconds, overseas: !!player.isOverseas, passed: [], phase: 'bidding', rev, lastResult: null },
     },
   });
   setTimer(code, 'close', endsAt - Date.now(), () => closeLot(code, rev));
@@ -236,12 +237,13 @@ function checkReserve(team, amount, settings) {
 }
 
 async function placeBid(code, { teamId, clientId, amount, bot = false }) {
-  const a = await Auction.findOne({ code }).populate('live.player');
+  const a = await Auction.findOne({ code }).select('-pool'); // no player lookup, no 274-id pool: fewer database round trips per bid
   if (!a) throw new HttpError(404, 'Auction not found');
   const team = a.teams.find((t) => String(t.team) === String(teamId));
   if (!team) throw new HttpError(404, 'Team not in this auction');
   if (!bot && team.ownerId !== clientId) throw new HttpError(403, 'You do not control this team');
-  checkEligibility(a, team, a.live.player);
+  const overseas = a.live.overseas ?? !!(await Player.findById(a.live.player).select('isOverseas').lean())?.isOverseas; // older lots saved before this field existed
+  checkEligibility(a, team, { isOverseas: overseas });
 
   const min = nextBid(a.live.currentBid, a.live.basePrice);
   const bidAmt = amount == null ? min : Math.round(Number(amount));
@@ -261,9 +263,16 @@ async function placeBid(code, { teamId, clientId, amount, bot = false }) {
     { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt, ...(extend ? { 'live.clockSeconds': a.settings.resetSeconds } : {}) }, $inc: { 'live.bidCount': 1 } },
   );
   if (!res.modifiedCount) throw new HttpError(409, 'Someone else bid first. Try again.');
-  await Bid.create({ auction: a._id, player: a.live.player._id, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot, bidderName: bot ? null : (team.ownerName || null) });
+  // The bid is saved: tell everyone NOW (team, amount, clock) before the slower bookkeeping below.
+  const bidId = new mongoose.Types.ObjectId();
+  const bidderName = bot ? null : (team.ownerName || null);
+  patch(code, {
+    live: { rev: a.live.rev, phase: 'bidding', currentBid: bidAmt, highestTeam: String(team.team), bidCount: a.live.bidCount + 1, endsAt, ...(extend ? { clockSeconds: a.settings.resetSeconds } : {}) },
+    bid: { _id: String(bidId), team: String(team.team), teamShort: team.short, amount: bidAmt, byBot: bot, bidderName, createdAt: new Date().toISOString() },
+  });
   setTimer(code, 'close', endsAt - Date.now(), () => closeLot(code, a.live.rev));
   botKick(code);
+  await Bid.create({ _id: bidId, auction: a._id, player: a.live.player, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot, bidderName });
   await broadcast(code, extend ? now : undefined);
 }
 
