@@ -35,7 +35,11 @@ async function newAuction(mode, settings, claim = 'MI') {
   console.log('seed', await seedAll());
   console.log('reseed (should be a no-op)', await seedAll());
   const server = http.createServer(buildApp());
-  engine.init(new Server(server));
+  const io = new Server(server);
+  const emitted = []; // record what is sent to watching clients
+  const realTo = io.to.bind(io);
+  io.to = (room) => { const r = realTo(room); return { emit: (ev, p) => { emitted.push({ ev, p, at: Date.now() }); return r.emit(ev, p); } }; };
+  engine.init(io);
   await new Promise((r) => server.listen(0, r));
   base = `http://localhost:${server.address().port}`;
 
@@ -197,6 +201,39 @@ async function newAuction(mode, settings, claim = 'MI') {
   assert.strictEqual((await call('GET', `/api/auctions/${m.code}`)).status, 404, 'deleted auction is gone for everyone');
   assert.strictEqual((await adm('DELETE', `/auctions/${m.code}`)).status, 404, 'deleting twice is a clean 404');
   await adm('DELETE', `/auctions/${acode}`);
+
+  // --- pause / resume ---
+  const P = await newAuction('rapid', { initialSeconds: 5, resetSeconds: 5, poolSize: 8, poolOrder: 'sequential' }, 'RR');
+  await call('POST', `/api/auctions/${P.code}/start`);
+  await new Promise((r) => setTimeout(r, 1200));
+  const hostCall = (action, client = HOST) => call('POST', `/api/auctions/${P.code}/host/${action}`, null, client);
+  const pre = await view(P.code);
+  assert.strictEqual((await hostCall('pause', GUEST)).status, 403, 'only the host can pause');
+  emitted.length = 0;
+  assert.strictEqual((await hostCall('pause')).status, 200, 'pause');
+  let pv = await view(P.code);
+  assert.strictEqual(pv.status, 'paused');
+  assert(pv.live.remainingMs >= 1000 && pv.live.remainingMs <= 5000, 'remaining time saved: ' + pv.live.remainingMs);
+  const pp = emitted.find((e) => e.ev === 'auction:patch');
+  assert(pp && pp.p.status === 'paused' && pp.p.live.rev === pre.live.rev && pp.p.live.remainingMs === pv.live.remainingMs, 'instant patch message sent on pause');
+  assert.deepStrictEqual(engine.timerKinds(P.code), [], 'every timer is stopped while paused');
+  assert((await hostCall('pause')).status === 409, 'pausing twice is a clean 409');
+  assert.strictEqual((await call('POST', `/api/auctions/${P.code}/bid`, { teamId: P.team })).status, 409, 'no bids while paused');
+  await new Promise((r) => setTimeout(r, 6500)); // longer than the whole timer: nothing may close while paused
+  pv = await view(P.code);
+  assert(pv.status === 'paused' && pv.live.phase === 'bidding' && pv.live.rev === pre.live.rev && pv.stats.sold + pv.stats.unsold === 0, 'lot does not close while paused');
+  emitted.length = 0;
+  assert.strictEqual((await hostCall('resume', GUEST)).status, 403, 'only the host can resume');
+  assert.strictEqual((await hostCall('resume')).status, 200, 'resume');
+  const rv = await view(P.code);
+  assert.strictEqual(rv.status, 'live');
+  const left = new Date(rv.live.endsAt).getTime() - rv.serverNow;
+  assert(left > 500 && left <= pv.live.remainingMs + 1500, 'clock resumes from the saved time (' + left + ' ms left, saved ' + pv.live.remainingMs + ')');
+  const rp = emitted.find((e) => e.ev === 'auction:patch');
+  assert(rp && rp.p.status === 'live' && rp.p.live.endsAt, 'instant patch message sent on resume');
+  assert((await hostCall('resume')).status === 409, 'resuming twice is a clean 409');
+  assert(engine.timerKinds(P.code).includes('close'), 'the close timer is re-armed after resume (the lot will end by itself)');
+  await adm('DELETE', `/auctions/${P.code}`);
 
   console.log('OK modes');
   process.exit(0);

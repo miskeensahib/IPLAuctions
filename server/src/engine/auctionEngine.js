@@ -60,6 +60,11 @@ async function view(code) {
 // of the countdown, so a 10 s timer was first shown as ~9 s. New clocks now get the typical delay added, so the
 // countdown starts at its full length when it reaches the screen. clockLag is measured from real broadcasts.
 let clockLag = 250; // ms
+// Small "state changed" message sent the moment a pause/resume is saved, ahead of the (slower) full update, so every
+// screen reacts after one database write instead of after the whole auction view has been rebuilt.
+function patch(code, p) {
+  if (io) io.to(`auction:${code}`).emit('auction:patch', { code, serverNow: Date.now(), ...p });
+}
 async function broadcast(code, clockSetAt) {
   if (!io) return;
   const v = await view(code);
@@ -297,15 +302,26 @@ async function hostAction(code, clientId, action) {
   }
   if (action === 'pause') {
     if (a.status !== 'live') throw new HttpError(409, 'Auction is not live');
-    clearTimers(code);
+    clearTimers(code); // the clock stops this instant; the database write follows
     const remaining = a.live.phase === 'bidding' ? Math.max(1000, new Date(a.live.endsAt).getTime() - Date.now()) : 0;
-    await Auction.updateOne({ _id: a._id }, { $set: { status: 'paused', 'live.remainingMs': remaining } });
+    // one guarded write: only if nothing moved on (new bid, lot closed) since we read it
+    const r = await Auction.updateOne({ _id: a._id, status: 'live', 'live.rev': a.live.rev, 'live.phase': a.live.phase }, { $set: { status: 'paused', 'live.remainingMs': remaining } });
+    if (!r.modifiedCount) { await resumeOne(code); throw new HttpError(409, 'The auction moved on while pausing. Please try again.'); }
+    patch(code, { status: 'paused', live: { rev: a.live.rev, phase: a.live.phase, remainingMs: remaining } });
     return broadcast(code);
   }
   if (action === 'resume') {
     if (a.status !== 'paused') throw new HttpError(409, 'Auction is not paused');
-    await Auction.updateOne({ _id: a._id }, { $set: { status: 'live' } });
-    await resumeOne(code);
+    const bidding = a.live.phase === 'bidding';
+    const endsAt = bidding ? new Date(Date.now() + (a.live.remainingMs || 1000) + clockLag) : a.live.endsAt;
+    const set = { status: 'live' };
+    if (bidding) { set['live.endsAt'] = endsAt; set['live.remainingMs'] = 0; }
+    const r = await Auction.updateOne({ _id: a._id, status: 'paused' }, { $set: set });
+    if (!r.modifiedCount) throw new HttpError(409, 'The auction is no longer paused.');
+    // re-arm timers straight from what we already hold: no second read, no second write
+    if (bidding) { setTimer(code, 'close', new Date(endsAt) - Date.now(), () => closeLot(code, a.live.rev)); botKick(code); }
+    else setTimer(code, 'advance', a.settings.breakSeconds * 1000, () => nextLot(code));
+    patch(code, { status: 'live', live: { rev: a.live.rev, phase: a.live.phase, remainingMs: 0, ...(bidding ? { endsAt } : {}) } });
     return broadcast(code);
   }
   if (action === 'end') {
@@ -409,4 +425,7 @@ async function deleteAuction(code) {
   return { bids: bids.deletedCount, results: results.deletedCount, squads: squads.deletedCount };
 }
 
-module.exports = { deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
+// Test hook: which timers are currently armed for an auction (close / advance / bot).
+const timerKinds = (code) => Object.keys(timers.get(code) || {});
+
+module.exports = { timerKinds, deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };

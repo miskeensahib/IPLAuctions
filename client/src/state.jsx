@@ -41,10 +41,16 @@ export function AuctionProvider({ code, children }) {
   const [me, setMe] = useState({ isHost: false, teamId: null });
   const offset = useRef(0);
 
+  // A pause/resume the host just clicked stays on screen until the server confirms it. Without this, an update that
+  // was already on its way (for example a bot's bid) would flip the screen back for a moment.
+  const hold = useRef(null); // { status, live, until }
   const apply = useCallback((a) => {
     offset.current = a.serverNow - Date.now();
+    const h = hold.current;
+    if (h && Date.now() < h.until && a.status !== h.status && (a.status === 'live' || a.status === 'paused')) a = { ...a, status: h.status, live: { ...a.live, ...h.live } };
     setAuction((prev) => (prev && prev.updatedAt > a.updatedAt ? prev : a));
   }, []);
+  const holdStatus = useCallback((h) => { hold.current = h ? { ...h, until: Date.now() + 8000 } : null; }, []);
 
   useEffect(() => {
     let alive = true;
@@ -53,8 +59,15 @@ export function AuctionProvider({ code, children }) {
     const onUpdate = (a) => { if (a.code === code) apply(a); };
     const onConn = () => { setConnected(true); socket.emit('auction:join', code); };
     const onDisc = () => setConnected(false);
+    // instant pause/resume message: merge into the current state (ignored if it belongs to another lot)
+    const onPatch = (p) => {
+      if (p.code !== code) return;
+      hold.current = null; // the server has confirmed: from here on its word is final
+      offset.current = p.serverNow - Date.now();
+      setAuction((prev) => (prev && prev.live && prev.live.rev === p.live?.rev ? { ...prev, status: p.status, live: { ...prev.live, ...p.live } } : prev));
+    };
     const onDeleted = (d) => { if (d.code === code) setError('This auction was removed by an admin'); };
-    socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc); socket.on('auction:deleted', onDeleted);
+    socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc); socket.on('auction:deleted', onDeleted); socket.on('auction:patch', onPatch);
     socket.connect();
     if (socket.connected) onConn();
     // Fallback polling keeps the page correct if the websocket is blocked.
@@ -62,7 +75,7 @@ export function AuctionProvider({ code, children }) {
     return () => {
       alive = false; clearInterval(poll);
       socket.emit('auction:leave', code);
-      socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc); socket.off('auction:deleted', onDeleted);
+      socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc); socket.off('auction:deleted', onDeleted); socket.off('auction:patch', onPatch);
     };
   }, [code, apply]);
 
@@ -78,7 +91,7 @@ export function AuctionProvider({ code, children }) {
   const myTeam = auction?.teams.find((t) => t.team === myTeamId) || null;
   const now = () => Date.now() + offset.current;
 
-  const value = { code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, now, refresh: () => api(`/auctions/${code}`).then(apply) };
+  const value = { patchAuction: setAuction, holdStatus, code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, now, refresh: () => api(`/auctions/${code}`).then(apply) };
   return <AuctionCtx.Provider value={value}>{children}</AuctionCtx.Provider>;
 }
 

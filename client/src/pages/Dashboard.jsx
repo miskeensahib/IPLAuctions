@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, fetchAllPlayers } from '../api';
 import { useAuction, useCountdown, useToast } from '../state';
@@ -45,9 +45,10 @@ export function Timer({ big }) {
 }
 
 export function CurrentPlayer({ compact }) {
-  const { auction, myTeam, isHost } = useAuction();
+  const { auction, myTeam, isHost, now, patchAuction, holdStatus, refresh } = useAuction();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const toggling = useRef(false);
   const [custom, setCustom] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const wl = useWatchlist();
@@ -63,6 +64,23 @@ export function CurrentPlayer({ compact }) {
     try { await api(`/auctions/${auction.code}/${path}`, { method: 'POST', body }); okMsg && toast.ok(okMsg); }
     catch (e) { toast.err(e.message); }
     finally { setBusy(false); }
+  };
+  // Pause / Resume react the instant the host clicks: the screen changes first, the server confirms right after
+  // (and the screen is put back if the server says no).
+  const hostToggle = async (action) => {
+    if (toggling.current) return;
+    toggling.current = true;
+    const pausing = action === 'pause';
+    const bidding = auction.live?.phase === 'bidding';
+    const live = pausing
+      ? { remainingMs: bidding ? Math.max(1000, new Date(auction.live.endsAt).getTime() - now()) : 0 }
+      : { remainingMs: 0, ...(bidding ? { endsAt: new Date(now() + (auction.live.remainingMs || 1000)).toISOString() } : {}) };
+    const status = pausing ? 'paused' : 'live';
+    holdStatus({ status, live });
+    patchAuction((a) => (a && a.live ? { ...a, status, live: { ...a.live, ...live } } : a));
+    try { await api(`/auctions/${auction.code}/host/${action}`, { method: 'POST' }); }
+    catch (e) { holdStatus(null); toast.err(e.message); refresh().catch(() => {}); }
+    finally { holdStatus(null); toggling.current = false; }
   };
   const bid = (amount) => act('bid', { teamId: myTeam.team, amount });
   const reason = !myTeam ? 'Pick a team first' : !bidding ? 'Bidding is closed' : live.highestTeam === myTeam.team ? 'You lead the bidding' : (live.passed || []).includes(myTeam.team) ? 'You passed' : '';
@@ -118,8 +136,8 @@ export function CurrentPlayer({ compact }) {
       )}
       {isHost && (
         <div className="host-row">
-          {auction.status === 'live' && <button className="btn ghost sm" onClick={() => act('host/pause')}>Pause</button>}
-          {auction.status === 'paused' && <button className="btn ghost sm" onClick={() => act('host/resume')}>Resume</button>}
+          {auction.status === 'live' && <button className="btn ghost sm" onClick={() => hostToggle('pause')}>Pause</button>}
+          {auction.status === 'paused' && <button className="btn ghost sm" onClick={() => hostToggle('resume')}>Resume</button>}
           <button className="btn ghost sm danger" onClick={() => window.confirm('End the auction now?') && act('host/end')}>End auction</button>
           <button className="btn ghost sm" onClick={() => setShowSettings(true)}>Settings</button>
         </div>
