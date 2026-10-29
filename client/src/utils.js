@@ -27,3 +27,11 @@ export function roleCounts(players) {
 
 // Franchise city shown on the SOLD! popup
 export const CITY = { CSK: 'Chennai', MI: 'Mumbai', RCB: 'Bengaluru', KKR: 'Kolkata', SRH: 'Hyderabad', RR: 'Rajasthan', PBKS: 'Punjab', DC: 'Delhi', LSG: 'Lucknow', GT: 'Gujarat' };
+
+// "Team name (user)" label for the Squad section. The host sees their own team as "(You (Host))"; anyone else sees the
+// host's team as "(<their name> (Host))" and every other human team as "(<name they entered>)". Bot teams show just the name.
+export function teamLabel(t, { isHost, myTeamId }) {
+  if (!t.claimed || !t.ownerName) return t.name;
+  if (t.host) return `${t.name} (${isHost && t.team === myTeamId ? 'You' : t.ownerName} (Host))`;
+  return `${t.name} (${t.ownerName})`;
+}

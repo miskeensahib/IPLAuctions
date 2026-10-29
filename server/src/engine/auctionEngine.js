@@ -49,7 +49,7 @@ async function view(code) {
   return {
     ...a,
     hostId: undefined,
-    teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, claimed: !t.isBot })),
+    teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, claimed: !t.isBot, host: !t.isBot && ownerId === a.hostId })), // owner ids stay private; `host` only says whose team the host controls
     pool: undefined,
     poolTotal: a.pool.length,
     bids, recent,

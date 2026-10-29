@@ -3,7 +3,7 @@ import { api } from '../api';
 import { useAuction } from '../state';
 import { TeamStrip } from '../Layout';
 import { Avatar, Empty, TeamBadge } from '../ui';
-import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, roleCounts } from '../utils';
+import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, roleCounts, teamLabel } from '../utils';
 import { BidHistory, CurrentPlayer, TeamPanel, useResults, useSquads } from './Dashboard';
 import Lobby from './Lobby';
 import SquadActions from '../SquadActions';
@@ -47,7 +47,7 @@ export function Teams() {
 }
 
 export function Squad() {
-  const { auction, myTeam } = useAuction();
+  const { auction, myTeam, myTeamId, isHost } = useAuction();
   const squads = useSquads(auction);
   const [short, setShort] = useState(null);
   const sel = auction.teams.find((t) => t.short === (short || myTeam?.short)) || auction.teams[0];
@@ -60,7 +60,7 @@ export function Squad() {
       <TeamPanel team={sel} />
       <section className="panel">
         <div className="lobby-head"><h3 className="panel-title">SQUAD</h3>
-          <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{t.name}</option>)}</select></div>
+          <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>
         <div className="seg wrap">
           <button className={!role ? 'on' : ''} onClick={() => setRole('')}>All ({sq.length})</button>
           {ROLE_KEYS.map((r) => <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>{ROLE_SHORT[r]} ({rc[r]})</button>)}
