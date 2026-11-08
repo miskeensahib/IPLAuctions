@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuction, useToast } from './state';
 import { api } from './api';
-import { fileName, renderSquadImage, renderStrengthImage, saveBlob, shareBlob, strengthFileName } from './squadImage';
+import { fileName, renderSquadImage, saveBlob, shareBlob, strengthFileName } from './squadImage';
 
 const Icon = ({ d }) => <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
 const SAVE = 'M12 3v12m0 0l-4-4m4 4l4-4M4 20h16';
@@ -23,8 +23,9 @@ export default function SquadActions({ team, players, compact }) {
   const strengthBlob = async () => {
     const d = await api(`/auctions/${auction.code}/strength`); // fresh scores at the moment of saving
     const t = d.teams.find((x) => x.short === team.short);
-    const rows = d.players.filter((p) => p.team === team.short);
-    return renderStrengthImage({ team, rows, summary: t ? { avg: t.avg, rank: t.rank, of: d.teams.length, rated: t.rated, estimated: t.estimated } : null, auctionName: auction.name, code: auction.code });
+    const byId = new Map(d.players.filter((p) => p.team === team.short).map((p) => [String(p.id), p]));
+    const scoreOf = (it) => byId.get(String(it.player._id));
+    return renderSquadImage({ team, players, auctionName: auction.name, code: auction.code, strength: { summary: t ? { avg: t.avg, rank: t.rank, of: d.teams.length, rated: t.rated, estimated: t.estimated } : null, scoreOf } });
   };
   const save = async () => {
     if (nothing) return;

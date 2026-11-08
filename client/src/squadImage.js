@@ -34,12 +34,16 @@ function globe(ctx, cx, cy, r, color) { // small "overseas" globe icon
 }
 
 // team: auction team state { short, name, color, purse, spent, overseas, count }; players: [{ player, price }]
-export async function renderSquadImage({ team, players, auctionName, code }) {
+// strength (optional, only for the Team & Player Strength image): { summary: { avg, rank, of, rated, estimated }, scoreOf(item) -> { strength, kind } }.
+// Without it the image is the plain Current View.
+const TIER = (v) => (v >= 80 ? '#34d399' : v >= 65 ? '#38bdf8' : v >= 50 ? '#fbbf24' : '#f87171');
+export async function renderSquadImage({ team, players, auctionName, code, strength = null }) {
   try { await document.fonts?.ready; } catch { /* fonts API unavailable: system font is used */ }
   const S = 2, W = 1080, PAD = 48, ROW = 64, GAP = 10;
   const groups = groupSquad(players);
   const bodyH = groups.reduce((n, g) => n + 62 + g.items.length * (ROW + GAP), 0);
-  const H = 250 + 112 + 74 + Math.max(bodyH, 90) + 96 + 40;
+  const SB = strength ? 112 : 0; // extra height for the Team Strength strip
+  const H = 250 + 112 + 74 + Math.max(bodyH, 90) + 96 + 40 + SB;
   const c = document.createElement('canvas');
   c.width = W * S; c.height = H * S;
   const ctx = c.getContext('2d');
@@ -78,6 +82,22 @@ export async function renderSquadImage({ team, players, auctionName, code }) {
   stat('Purse:', lakhToCr(team.purse), '#34d399', W / 2, 'center');
   stat('Spent:', lakhToCr(team.spent), '#fbbf24', W - PAD - 28, 'right');
   y += 86 + 58;
+  if (strength) { // Team Strength strip, same card style as the purse strip above it
+    const sy = y - 58 + 14, sm = strength.summary, has = sm && sm.avg != null;
+    rr(ctx, PAD, sy, W - PAD * 2, 98, 18); ctx.fillStyle = '#151a33'; ctx.fill();
+    ctx.textBaseline = 'alphabetic'; ctx.font = font(500, 22); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillText('TEAM STRENGTH', PAD + 28, sy + 36);
+    ctx.font = font(800, 50); ctx.fillStyle = has ? TIER(sm.avg) : '#8b93b8';
+    const v = has ? sm.avg.toFixed(1) : '—'; ctx.fillText(v, PAD + 28, sy + 84);
+    const vw = ctx.measureText(v).width; ctx.font = font(600, 24); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillText('/100', PAD + 28 + vw + 8, sy + 84);
+    ctx.font = font(500, 22); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillText('RANK', W / 2 + 10, sy + 36);
+    ctx.font = font(800, 44); ctx.fillStyle = '#ffffff'; const rk = sm && sm.rank ? '#' + sm.rank : '–'; ctx.fillText(rk, W / 2 + 10, sy + 84);
+    const rw = ctx.measureText(rk).width; ctx.font = font(600, 24); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillText('of ' + ((sm && sm.of) || 10), W / 2 + 10 + rw + 8, sy + 84);
+    ctx.textAlign = 'right'; ctx.font = font(500, 22); ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.fillText('Average of ' + players.length + ' player' + (players.length === 1 ? '' : 's'), W - PAD - 28, sy + 50);
+    ctx.fillText(sm ? sm.rated + ' from IPL stats' + (sm.estimated ? ' · ' + sm.estimated + ' est.' : '') : '', W - PAD - 28, sy + 82);
+    ctx.textAlign = 'left';
+    y += SB;
+  }
 
   // bought
   ctx.fillStyle = '#34d399'; ctx.font = font(800, 38);
@@ -96,11 +116,18 @@ export async function renderSquadImage({ team, players, auctionName, code }) {
     for (const it of g.items) {
       rr(ctx, PAD, y, W - PAD * 2, ROW, 14); ctx.fillStyle = '#1a2040'; ctx.fill();
       ctx.font = font(700, 31); ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle';
-      const name = fit(ctx, it.player.name, 640);
+      const name = fit(ctx, it.player.name, strength ? 520 : 640);
       ctx.fillText(name, PAD + 24, y + ROW / 2 + 1);
       if (it.player.isOverseas) globe(ctx, PAD + 24 + ctx.measureText(name).width + 28, y + ROW / 2, 12, '#a78bfa');
       ctx.font = font(800, 31); ctx.fillStyle = '#34d399'; ctx.textAlign = 'right';
-      ctx.fillText(lakhToCr(it.price), W - PAD - 24, y + ROW / 2 + 1);
+      ctx.fillText(lakhToCr(it.price), W - PAD - 24 - (strength ? 112 : 0), y + ROW / 2 + 1);
+      if (strength) { // this player's strength badge (dashed ring + "est." when estimated)
+        const sc = strength.scoreOf(it) || {}, val = sc.strength, bx = W - PAD - 24 - 28, by = y + ROW / 2;
+        if (sc.kind === 'estimated') { ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = font(700, 18); ctx.fillText('est.', bx - 28 - 8, by + 1); }
+        ctx.beginPath(); ctx.arc(bx, by, 25, 0, Math.PI * 2); ctx.fillStyle = '#0b1020'; ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = val == null ? '#8b93b8' : TIER(val); ctx.setLineDash(sc.kind === 'estimated' ? [6, 5] : []); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#ffffff'; ctx.font = font(800, 25); ctx.textAlign = 'center'; ctx.fillText(val == null ? '–' : String(Math.round(val)), bx, by + 1);
+      }
       ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
       y += ROW + GAP;
     }
@@ -137,86 +164,4 @@ export async function shareBlob(blob, name, { title, text }) {
   catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; throw e; }
 }
 
-// ---- Team & Player Strength image ----
-// team: auction team state; rows: [{ name, role, isOverseas, price, strength, kind }]; summary: { avg, rank, of, count, rated, estimated }
-const TIER = (v) => (v >= 80 ? '#34d399' : v >= 65 ? '#38bdf8' : v >= 50 ? '#fbbf24' : '#f87171');
-export async function renderStrengthImage({ team, rows, summary, auctionName, code }) {
-  try { await document.fonts?.ready; } catch { /* system font is used */ }
-  const S = 2, W = 1080, PAD = 48, ROW = 72, GAP = 10;
-  const list = [...rows].sort((a, b) => (b.strength ?? 0) - (a.strength ?? 0));
-  const H = 250 + 250 + 70 + Math.max(list.length, 1) * (ROW + GAP) + 190;
-  const c = document.createElement('canvas');
-  c.width = W * S; c.height = H * S;
-  const ctx = c.getContext('2d');
-  ctx.scale(S, S);
-  const font = (w, px) => `${w} ${px}px Inter, Roboto, "Segoe UI", Arial, sans-serif`;
-  const color = team.color || '#2563eb';
-
-  ctx.fillStyle = '#0b1020'; ctx.fillRect(0, 0, W, H);
-  const band = ctx.createLinearGradient(0, 0, W, 250);
-  band.addColorStop(0, color); band.addColorStop(1, '#0b1020');
-  ctx.fillStyle = band; ctx.globalAlpha = 0.55; ctx.fillRect(0, 0, W, 250); ctx.globalAlpha = 1;
-  ctx.fillStyle = '#f7b500'; ctx.font = font(800, 26); ctx.textBaseline = 'alphabetic';
-  ctx.fillText('IPL AUCTION 2026  ·  TEAM & PLAYER STRENGTH', PAD, 70);
-  ctx.fillStyle = '#ffffff'; ctx.font = font(800, 54);
-  ctx.fillText(fit(ctx, team.name, W - PAD * 2 - 150), PAD, 140);
-  ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = font(500, 26);
-  ctx.fillText(fit(ctx, `${auctionName || 'Auction'}${code ? `  ·  #${code}` : ''}`, W - PAD * 2 - 150), PAD, 190);
-  rr(ctx, W - PAD - 110, 54, 110, 110, 26); ctx.fillStyle = color; ctx.fill();
-  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.stroke();
-  ctx.fillStyle = '#fff'; ctx.font = font(800, team.short.length > 3 ? 34 : 40); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(team.short, W - PAD - 55, 110); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-
-  // team strength card
-  let y = 244;
-  rr(ctx, PAD, y, W - PAD * 2, 200, 22); ctx.fillStyle = '#151a33'; ctx.fill();
-  const hasAvg = summary && summary.avg != null;
-  ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = font(700, 24); ctx.fillText('TEAM STRENGTH', PAD + 34, y + 52);
-  ctx.fillStyle = hasAvg ? TIER(summary.avg) : '#8b93b8'; ctx.font = font(800, 92);
-  const big = hasAvg ? summary.avg.toFixed(1) : '—';
-  ctx.fillText(big, PAD + 34, y + 148);
-  const bw = ctx.measureText(big).width;
-  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = font(600, 30); ctx.fillText('/100', PAD + 34 + bw + 10, y + 148);
-  const rx = W / 2 + 80;
-  ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = font(700, 24); ctx.fillText('RANK', rx, y + 52);
-  ctx.fillStyle = '#fff'; ctx.font = font(800, 64); const rk = summary?.rank ? `#${summary.rank}` : '–'; ctx.fillText(rk, rx, y + 128);
-  const rkw = ctx.measureText(rk).width;
-  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = font(600, 28); ctx.fillText(`of ${summary?.of || 10}`, rx + rkw + 12, y + 128);
-  ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = font(500, 24);
-  const basis = summary ? `Average of ${rows.length} player${rows.length === 1 ? '' : 's'}: ${summary.rated} from IPL stats${summary.estimated ? `, ${summary.estimated} estimated` : ''}` : '';
-  ctx.fillText(fit(ctx, basis, W - PAD * 2 - 68), PAD + 34, y + 184);
-  y += 200 + 62;
-
-  ctx.fillStyle = '#34d399'; ctx.font = font(800, 36); ctx.fillText(`Players (${rows.length})`, PAD, y);
-  y += 26;
-  if (!list.length) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = font(500, 30); ctx.fillText('No players bought yet.', PAD, y + 50); y += 80; }
-  for (const it of list) {
-    rr(ctx, PAD, y, W - PAD * 2, ROW, 14); ctx.fillStyle = '#1a2040'; ctx.fill();
-    ctx.textBaseline = 'middle'; ctx.font = font(700, 30); ctx.fillStyle = '#fff';
-    const name = fit(ctx, it.name, 560);
-    ctx.fillText(name, PAD + 24, y + ROW / 2 - 9);
-    if (it.isOverseas) globe(ctx, PAD + 24 + ctx.measureText(name).width + 26, y + ROW / 2 - 9, 11, '#a78bfa');
-    ctx.font = font(500, 22); ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.fillText(`${it.role || ''}${it.price != null ? `  ·  ${lakhToCr(it.price)}` : ''}`, PAD + 24, y + ROW / 2 + 19);
-    const v = it.strength, cx = W - PAD - 52, cy = y + ROW / 2;
-    if (it.kind === 'estimated') { ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = font(700, 20); ctx.textAlign = 'right'; ctx.fillText('est.', cx - 40, cy); ctx.textAlign = 'left'; }
-    ctx.beginPath(); ctx.arc(cx, cy, 28, 0, Math.PI * 2); ctx.fillStyle = '#0b1020'; ctx.fill();
-    ctx.lineWidth = 4; ctx.strokeStyle = v == null ? '#8b93b8' : TIER(v);
-    ctx.setLineDash(it.kind === 'estimated' ? [6, 5] : []); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#fff'; ctx.font = font(800, 28); ctx.textAlign = 'center'; ctx.fillText(v == null ? '–' : String(Math.round(v)), cx, cy + 1);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    y += ROW + GAP;
-  }
-  y += 24;
-  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = font(500, 21);
-  ctx.fillText('Scores out of 100 from IPL career stats (Cricsheet.org).', PAD, y);
-  ctx.fillText('Dashed ring + "est." = estimated for a short IPL record.', PAD, y + 30);
-  ctx.fillText('Team strength = average of its players’ scores.', PAD, y + 60);
-  const fy = H - 70;
-  ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(PAD, fy - 28, W - PAD * 2, 2);
-  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = font(500, 24); ctx.fillText('IPL Auction 2026', PAD, fy + 14);
-  ctx.textAlign = 'right'; ctx.fillText(new Date().toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' }), W - PAD, fy + 14); ctx.textAlign = 'left';
-
-  return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('Image could not be created'))), 'image/png'));
-}
 export const strengthFileName = (team) => `IPL2026-${team.short}-strength.png`;
