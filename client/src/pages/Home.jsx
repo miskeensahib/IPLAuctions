@@ -27,8 +27,8 @@ export function Welcome() {
 
 export default function Home() {
   const [name, setName] = useUserName();
-  const [modes, setModes] = useState(null);
-  const [recent, setRecent] = useState([]);
+  const [modes, setModes] = useState(() => { try { return JSON.parse(sessionStorage.getItem('ipl.modes')); } catch { return null; } }); // shown instantly when seen earlier in this tab, then refreshed
+  const [recent, setRecent] = useState(null);
   const [error, setError] = useState(null);
   const [mode, setMode] = useState('mini');
   const [play, setPlay] = useState('solo');
@@ -41,7 +41,8 @@ export default function Home() {
 
   const load = () => {
     setError(null);
-    Promise.all([api('/auctions/modes'), api('/auctions')]).then(([m, r]) => { setModes(m); setRecent(r); }).catch((e) => setError(e.message));
+    api('/auctions/modes').then((m) => { setModes(m); try { sessionStorage.setItem('ipl.modes', JSON.stringify(m)); } catch { /* ignore */ } }).catch((e) => { if (!modes) setError(e.message); });
+    api('/auctions').then(setRecent).catch(() => setRecent([])); // never blocks the page
   };
   useEffect(load, []);
 
@@ -100,7 +101,7 @@ export default function Home() {
           <button className="btn gold">JOIN</button>
         </form>
         <h3 className="panel-title">RECENT AUCTIONS</h3>
-        {!recent.length ? <p className="muted">None yet. Create the first one.</p> : (
+        {recent === null ? <p className="muted">Loading…</p> : !recent.length ? <p className="muted">None yet. Create the first one.</p> : (
           <ul className="rows">
             {recent.map((a) => (
               <li key={a.code}><Link to={`/a/${a.code}`} className="grow"><b>{a.name}</b><br /><small className="muted">#{a.code} · {a.hostName} · {a.play}</small></Link><span className={`st ${a.status}`}>{a.status}</span></li>

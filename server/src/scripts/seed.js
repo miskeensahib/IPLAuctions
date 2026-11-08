@@ -12,6 +12,14 @@ const ignoreDup = (e) => { if (!(e.writeErrors || [e]).every((w) => (w.err?.code
 // Idempotent and non-destructive: records are rewritten only when their seedVersion is older than the
 // current one, so later edits made in the Admin Panel survive restarts. basePrice is never overwritten.
 async function seedAll() {
+  // Fast path: everything is already at the current seed version, so there is nothing to write. This used to re-check
+  // all 274 players on every start (about 2 s, which also delayed every wake-up of a sleeping server).
+  const [seeded, presets, teams] = await Promise.all([
+    Player.countDocuments({ seedVersion: SEED_VERSION }), AuctionSetting.countDocuments({ version: SEED_VERSION }), Team.countDocuments(),
+  ]);
+  if (seeded >= PLAYERS.length && presets >= PRESETS.length && teams >= TEAMS.length) {
+    return { teams, presets, players: await Player.countDocuments(), updated: 0, legacyRemoved: 0, skipped: true };
+  }
   await Promise.all(TEAMS.map((t) => Team.updateOne({ short: t.short }, { $set: t }, { upsert: true })));
   for (const p of PRESETS) {
     await AuctionSetting.updateOne({ key: p.key, version: { $ne: SEED_VERSION } }, { $set: { ...p, version: SEED_VERSION } }, { upsert: true }).catch(ignoreDup);

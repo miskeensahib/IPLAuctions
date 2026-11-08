@@ -20,21 +20,37 @@ export const adminKey = {
   set: (v) => { try { sessionStorage.setItem('ipl.adminKey', v); } catch { /* ignore */ } },
 };
 
-export async function api(path, { method = 'GET', body, admin } = {}) {
-  let res;
-  try {
-    res = await fetch(`${BASE}/api${path}`, {
-      method,
-      headers: { 'Content-Type': 'application/json', 'x-client-id': clientId, ...(admin ? { 'x-admin-key': adminKey.get() } : {}) },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-  } catch {
-    throw new Error('Cannot reach the server. Check your connection.');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const WAKING = new Set([502, 503, 504]); // what a sleeping / just-starting server answers with
+
+// Reads (GET) are retried automatically: a free-tier server that has gone to sleep drops the first request or answers
+// 502/503 while it starts, and it is usually ready a few seconds later. Changes (POST/PUT/DELETE) are never retried,
+// so nothing can be done twice. `tries` overrides the number of attempts.
+export async function api(path, { method = 'GET', body, admin, tries } = {}) {
+  const max = tries || (method === 'GET' ? 8 : 1);
+  for (let i = 1; ; i++) {
+    let res;
+    try {
+      res = await fetch(`${BASE}/api${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'x-client-id': clientId, ...(admin ? { 'x-admin-key': adminKey.get() } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch {
+      if (i < max) { await sleep(Math.min(4000, 1000 * i)); continue; }
+      throw new Error('Cannot reach the server. Check your connection.');
+    }
+    if (WAKING.has(res.status) && i < max) { await sleep(Math.min(4000, 1000 * i)); continue; }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
   }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-  return data;
 }
+
+// Wake the backend the moment the site opens (before the user has even typed their name), so it is ready by the time
+// the first screen asks for data.
+export function warmUp() { fetch(`${BASE}/api/health`, { cache: 'no-store' }).catch(() => {}); }
+warmUp();
 
 // Hands this browser's teams back to the bots, drops the session (name, team/host markers, admin key, identity)
 // and reloads on the login page. (All application data lives in MongoDB; the browser keeps only the session.)

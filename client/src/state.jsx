@@ -81,7 +81,7 @@ export function AuctionProvider({ code, children }) {
     socket.connect();
     if (socket.connected) onConn();
     // Fallback polling keeps the page correct if the websocket is blocked.
-    const poll = setInterval(() => { if (!socket.connected) api(`/auctions/${code}`).then((a) => alive && apply(a)).catch(() => {}); }, 3000);
+    const poll = setInterval(() => { if (!socket.connected) api(`/auctions/${code}`, { tries: 1 }).then((a) => alive && apply(a)).catch(() => {}); }, 3000);
     return () => {
       alive = false; clearInterval(poll);
       socket.emit('auction:leave', code);

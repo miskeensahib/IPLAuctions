@@ -32,7 +32,17 @@ export function TeamBadge({ short, color, size = 34 }) {
   );
 }
 
-export const Spinner = ({ label = 'Loading…' }) => <div className="center-msg"><span className="spin" />{label}</div>;
+// After a few seconds the spinner explains the wait (a free-tier server that slept needs up to a minute to wake).
+export function Spinner({ label = 'Loading…' }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setSlow(true), 3000); return () => clearTimeout(t); }, []);
+  return (
+    <div className="center-msg col" role="status">
+      <span className="spin-row"><span className="spin" />{label}</span>
+      {slow && <small className="muted slow-note">Waking up the server… after a quiet spell this can take up to a minute. Please keep this page open; it will continue by itself.</small>}
+    </div>
+  );
+}
 export const Empty = ({ children }) => <div className="empty">{children}</div>;
 export const ErrorBox = ({ children, onRetry }) => (
   <div className="errbox" role="alert">{children}{onRetry && <button className="btn ghost sm" onClick={onRetry}>Retry</button>}</div>
