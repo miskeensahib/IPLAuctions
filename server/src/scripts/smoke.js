@@ -32,6 +32,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.strictEqual((await call('POST', '/api/players', { name: 'X' })).status, 401);
   assert.strictEqual((await call('POST', '/api/players', { name: 'Test Guy', country: 'India', role: 'Batter' }, ME, { 'x-admin-key': 'test-key' })).status, 201);
 
+  { // one team per person: switching teams frees the old one, in a multiplayer room too
+    const { body: { code: rc } } = await call('POST', '/api/auctions', { mode: 'mini', play: 'multi', hostName: 'Tester' });
+    const view = async () => (await call('GET', `/api/auctions/${rc}`)).body;
+    const id = async (s) => (await view()).teams.find((t) => t.short === s).team;
+    const st = async (s) => (await view()).teams.find((t) => t.short === s);
+    const [csk, kkr, rcb] = [await id('CSK'), await id('KKR'), await id('RCB')];
+    await call('POST', `/api/auctions/${rc}/claim`, { teamId: csk, name: 'Tester' });
+    assert((await st('CSK')).claimed && (await st('CSK')).ownerName === 'Tester', 'name shows under the first team');
+    assert.strictEqual((await call('POST', `/api/auctions/${rc}/claim`, { teamId: kkr, name: 'Tester' })).status, 200);
+    assert(!(await st('CSK')).claimed && (await st('CSK')).ownerName == null && (await st('CSK')).isBot, 'old team (CSK) is released: no username under it');
+    assert((await st('KKR')).claimed && (await st('KKR')).ownerName === 'Tester', 'name now shows under KKR');
+    assert((await view()).teams.filter((t) => t.ownerName === 'Tester').length === 1, 'exactly one team shows the username');
+    assert.strictEqual((await call('GET', `/api/auctions/${rc}/me`)).body.teamId, kkr, 'after a refresh the user still has KKR only');
+    // a failed claim (team taken by someone else) must not cost the user their current team
+    await call('POST', `/api/auctions/${rc}/claim`, { teamId: rcb, name: 'Other' }, OTHER);
+    assert.strictEqual((await call('POST', `/api/auctions/${rc}/claim`, { teamId: rcb, name: 'Tester' })).status, 409);
+    assert((await st('KKR')).claimed && (await st('KKR')).ownerName === 'Tester', 'a refused claim keeps the current team');
+    // old rooms that already hold two teams for one person are tidied on refresh
+    const Au = require('../models/Auction');
+    await Au.updateOne({ code: rc }, { $set: { 'teams.$[t].isBot': false, 'teams.$[t].ownerId': ME, 'teams.$[t].ownerName': 'Tester' } }, { arrayFilters: [{ 't.team': csk }] });
+    assert((await view()).teams.filter((t) => t.ownerName === 'Tester').length === 2, 'setup: stale duplicate');
+    await call('GET', `/api/auctions/${rc}/me`);
+    assert((await view()).teams.filter((t) => t.ownerName === 'Tester').length === 1, 'a stale duplicate is cleaned up');
+  }
+
   const { body: { code } } = await call('POST', '/api/auctions', { mode: 'rapid', hostName: 'Tester', settings: { initialSeconds: 5, resetSeconds: 3, breakSeconds: 1, poolSize: 6, poolOrder: 'sequential' } });
   let a = (await call('GET', `/api/auctions/${code}`)).body;
   const mine = a.teams.find((t) => t.short === 'MI').team;

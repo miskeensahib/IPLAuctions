@@ -14,7 +14,6 @@ export default function Lobby() {
   const claim = async (t) => {
     setBusy(true);
     try {
-      if (myTeamId && myTeamId !== t.team && auction.play === 'solo') await api(`/auctions/${code}/release`, { method: 'POST', body: { teamId: myTeamId } });
       await api(`/auctions/${code}/claim`, { method: 'POST', body: { teamId: t.team, name } });
       setMyTeam(t.team); toast.ok(`You are ${t.name}`);
     } catch (e) { toast.err(e.message); } finally { setBusy(false); }

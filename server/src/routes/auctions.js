@@ -46,6 +46,7 @@ router.post('/', wrap(async (req, res) => {
 // Which team (if any) and whether host, for the calling browser. Read from MongoDB, not trusted from the client.
 router.get('/:code/me', wrap(async (req, res) => {
   const id = cid(req);
+  await engine.tidyOwner(up(req.params.code), id); // a person holds at most one team
   const a = await Auction.findOne({ code: up(req.params.code) }).select('hostId teams.team teams.ownerId').lean();
   if (!a) throw new HttpError(404, 'Auction not found');
   res.json({ isHost: a.hostId === id, teamId: a.teams.find((t) => t.ownerId === id)?.team || null });

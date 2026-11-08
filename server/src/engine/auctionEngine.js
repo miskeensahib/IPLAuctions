@@ -120,22 +120,39 @@ async function createAuction({ name, mode = 'mini', play = 'solo', overrides = {
   return a.code;
 }
 
+// One team per person, in every mode: give the person's other teams back to the bots (lobby only).
+async function freeOtherTeams(a, clientId, keepTeamId) {
+  const others = a.teams.filter((t) => t.ownerId === clientId && String(t.team) !== String(keepTeamId)).map((t) => t.team);
+  if (!others.length) return false;
+  await Auction.updateOne({ _id: a._id }, { $set: { 'teams.$[t].isBot': true, 'teams.$[t].ownerId': null, 'teams.$[t].ownerName': null } }, { arrayFilters: [{ 't.ownerId': clientId, 't.team': { $in: others } }] });
+  return true;
+}
+
 async function claimTeam(code, { teamId, clientId, name }) {
   const a = await Auction.findOne({ code });
   if (!a) throw new HttpError(404, 'Auction not found');
   if (a.status === 'completed') throw new HttpError(409, 'Auction already finished');
-  if (a.play === 'solo' && a.teams.some((t) => t.ownerId === clientId && String(t.team) !== String(teamId)))
-    throw new HttpError(409, 'Solo mode allows one team per player');
+  const hasOther = a.teams.some((t) => t.ownerId === clientId && String(t.team) !== String(teamId));
+  if (hasOther && a.status !== 'lobby') throw new HttpError(409, 'You already control a team in this auction');
   const res = await Auction.updateOne(
     { _id: a._id, teams: { $elemMatch: { team: teamId, isBot: true } } },
     { $set: { 'teams.$.isBot': false, 'teams.$.ownerId': clientId, 'teams.$.ownerName': String(name || 'Player').slice(0, 30) } },
   );
   if (!res.modifiedCount) {
     const t = a.teams.find((x) => String(x.team) === String(teamId));
-    if (t && t.ownerId === clientId) return; // already mine
-    throw new HttpError(409, t ? 'Team already taken' : 'Team not found');
+    if (!(t && t.ownerId === clientId)) throw new HttpError(409, t ? 'Team already taken' : 'Team not found');
   }
-  await broadcast(code);
+  // only after the new team is secured, so a failed claim never costs the person their current team
+  const freed = hasOther ? await freeOtherTeams(a, clientId, teamId) : false;
+  if (res.modifiedCount || freed) await broadcast(code);
+}
+
+// Cleans up a person who somehow holds several teams in a lobby (older rooms): keeps the first, frees the rest.
+async function tidyOwner(code, clientId) {
+  const a = await Auction.findOne({ code });
+  if (!a || a.status !== 'lobby') return;
+  const mine = a.teams.filter((t) => t.ownerId === clientId);
+  if (mine.length > 1 && await freeOtherTeams(a, clientId, mine[0].team)) await broadcast(code);
 }
 
 async function releaseTeam(code, { teamId, clientId }) {
@@ -437,4 +454,4 @@ async function deleteAuction(code) {
 // Test hook: which timers are currently armed for an auction (close / advance / bot).
 const timerKinds = (code) => Object.keys(timers.get(code) || {});
 
-module.exports = { timerKinds, deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
+module.exports = { tidyOwner, timerKinds, deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
