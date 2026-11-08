@@ -32,6 +32,28 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   assert.strictEqual((await call('POST', '/api/players', { name: 'X' })).status, 401);
   assert.strictEqual((await call('POST', '/api/players', { name: 'Test Guy', country: 'India', role: 'Batter' }, ME, { 'x-admin-key': 'test-key' })).status, 201);
 
+  { // every bid restarts the countdown from the configured timer, whatever time was left
+    const { body: { code: tc } } = await call('POST', '/api/auctions', { mode: 'rapid', hostName: 'Timer', settings: { initialSeconds: 10, breakSeconds: 2, poolSize: 3 } });
+    const tv = async () => (await call('GET', `/api/auctions/${tc}`)).body;
+    const tm = (await tv()).teams.find((t) => t.short === 'RR').team;
+    await call('POST', `/api/auctions/${tc}/claim`, { teamId: tm, name: 'Timer' });
+    assert.strictEqual((await tv()).settings.resetSeconds, 10, 'bid reset follows the one configured timer');
+    await call('POST', `/api/auctions/${tc}/start`);
+    const left = async () => { const x = (await tv()).live; return { s: (new Date(x.endsAt) - Date.now()) / 1000, clock: x.clockSeconds, bids: x.bidCount, high: x.highestTeam }; };
+    let before, status = 0; // bots also bid and restart the clock: wait until it has really run below 6s, then bid at once
+    for (let i = 0; i < 400 && status !== 200; i++) {
+      before = await left();
+      if (before.s < 6 && before.s > 1 && String(before.high) !== String(tm)) status = (await call('POST', `/api/auctions/${tc}/bid`, { teamId: tm })).status;
+      else await sleep(150);
+    }
+    assert.strictEqual(status, 200, 'bid placed while the clock was running down');
+    const after = await left();
+    assert(after.s > 9 && after.s <= 10.8 && after.clock === 10, `bid with ~${before.s.toFixed(0)}s left puts the clock back to 10s (now ${after.s.toFixed(1)}s)`);
+    await sleep(3500);
+    const mid = await left(); // a bot may have bid meanwhile: either way the clock must never be below what a fresh reset allows
+    assert(mid.s < 10 && (mid.bids > after.bids || mid.s < 7.5), 'clock keeps counting down between bids');
+  }
+
   { // one team per person: switching teams frees the old one, in a multiplayer room too
     const { body: { code: rc } } = await call('POST', '/api/auctions', { mode: 'mini', play: 'multi', hostName: 'Tester' });
     const view = async () => (await call('GET', `/api/auctions/${rc}`)).body;
@@ -78,7 +100,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // let bots + timers run the whole pool, bidding when we can
   let guard = 0;
-  while (a.status !== 'completed' && guard++ < 400) {
+  while (a.status !== 'completed' && guard++ < 1200) {
     await sleep(500);
     a = (await call('GET', `/api/auctions/${code}`)).body;
     if (a.status === 'live' && a.live.phase === 'bidding' && String(a.live.highestTeam) !== String(mine) && Math.random() < 0.3) await call('POST', `/api/auctions/${code}/bid`, { teamId: mine });

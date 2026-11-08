@@ -50,7 +50,6 @@ export function CurrentPlayer({ compact }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const toggling = useRef(false);
-  const [custom, setCustom] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const wl = useWatchlist();
   const strength = useStrength(auction);
@@ -93,9 +92,8 @@ export function CurrentPlayer({ compact }) {
     const impossible = !Number.isFinite(amt) || amt < minBid(base) || amt > myTeam.purse || myTeam.count >= s.maxSquad || (base.player?.isOverseas && myTeam.overseas >= s.maxOverseas);
     if (impossible) return act('bid', { teamId: myTeam.team, amount }); // let the server explain, nothing to show first
     const t = now();
-    const extend = t + s.resetSeconds * 1000 > new Date(base.endsAt).getTime();
     const row = { _id: `opt-${base.rev}-${base.bidCount + 1}`, team: myTeam.team, teamShort: myTeam.short, amount: amt, byBot: false, bidderName: myTeam.ownerName, createdAt: new Date(t).toISOString() };
-    patchAuction((a) => (a && a.live ? { ...a, live: { ...a.live, currentBid: amt, highestTeam: myTeam.team, bidCount: a.live.bidCount + 1, ...(extend ? { endsAt: new Date(t + s.resetSeconds * 1000).toISOString(), clockSeconds: s.resetSeconds } : {}) }, bids: [row, ...(a.bids || [])].slice(0, 8) } : a));
+    patchAuction((a) => (a && a.live ? { ...a, live: { ...a.live, currentBid: amt, highestTeam: myTeam.team, bidCount: a.live.bidCount + 1, endsAt: new Date(t + s.initialSeconds * 1000).toISOString(), clockSeconds: s.initialSeconds }, bids: [row, ...(a.bids || [])].slice(0, 8) } : a));
     try { await api(`/auctions/${auction.code}/bid`, { method: 'POST', body: { teamId: myTeam.team, amount } }); }
     catch (e) { toast.err(e.message); refresh().catch(() => {}); }
   };
@@ -143,13 +141,6 @@ export function CurrentPlayer({ compact }) {
         </button>
       </div>
       {reason && myTeam && <p className="hint" role="status">{reason}</p>}
-      {myTeam && bidding && (
-        <form className="custom-bid" onSubmit={(e) => { e.preventDefault(); const v = Math.round(parseFloat(custom) * 100); if (!v) return toast.err('Enter an amount in Cr'); bid(v); setCustom(''); }}>
-          <label htmlFor="cb">Custom bid (Cr)</label>
-          <input id="cb" inputMode="decimal" placeholder={(min / 100).toFixed(2)} value={custom} onChange={(e) => setCustom(e.target.value)} />
-          <button className="btn ghost sm" disabled={!canBid || !custom}>Bid</button>
-        </form>
-      )}
       {isHost && (
         <div className="host-row">
           {auction.status === 'live' && <button className="btn ghost sm" onClick={() => hostToggle('pause')}>Pause</button>}

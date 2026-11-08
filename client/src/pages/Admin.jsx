@@ -151,7 +151,7 @@ function Settings() {
       {modes.map((m) => (
         <section className="panel" key={m.key}>
           <h3 className="panel-title">{m.label.toUpperCase()}</h3>
-          <div className="adv">{fld(m, 'purse', 'Purse (Cr)', 100)}{fld(m, 'minSquad', 'Min squad')}{fld(m, 'maxSquad', 'Max squad')}{fld(m, 'maxOverseas', 'Max overseas')}{fld(m, 'initialSeconds', 'Timer (s)')}{fld(m, 'resetSeconds', 'Bid reset (s)')}{fld(m, 'poolSize', 'Pool size')}</div>
+          <div className="adv">{fld(m, 'purse', 'Purse (Cr)', 100)}{fld(m, 'minSquad', 'Min squad')}{fld(m, 'maxSquad', 'Max squad')}{fld(m, 'maxOverseas', 'Max overseas')}{fld(m, 'initialSeconds', 'Timer (s)')}{fld(m, 'poolSize', 'Pool size')}</div>
           <button className="btn ghost" onClick={() => save(m)}>Save preset</button>
         </section>
       ))}

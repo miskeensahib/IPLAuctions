@@ -87,7 +87,7 @@ export default function Home() {
         {adv && (
           <div className="adv">
             {num('purse', 'Purse (Cr)', preset.purse / 100)}{num('minSquad', 'Min squad', preset.minSquad)}{num('maxSquad', 'Max squad', preset.maxSquad)}{num('maxOverseas', 'Max overseas', preset.maxOverseas)}
-            {num('initialSeconds', 'Timer (s)', preset.initialSeconds)}{num('resetSeconds', 'Bid reset (s)', preset.resetSeconds)}{num('poolSize', 'Players in pool (0 = all)', preset.poolSize)}
+            {num('initialSeconds', 'Timer (s)', preset.initialSeconds)}{num('poolSize', 'Players in pool (0 = all)', preset.poolSize)}
             <label className="field"><span>Order</span><select value={ov.poolOrder || preset.poolOrder} onChange={(e) => setOv({ ...ov, poolOrder: e.target.value })}><option value="random">Random</option><option value="marquee">Prominent first</option><option value="sequential">Sequential</option></select></label>
           </div>
         )}

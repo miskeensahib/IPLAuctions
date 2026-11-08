@@ -53,7 +53,7 @@ export default function Lobby() {
         <dl className="kv">
           <div><dt>Mode</dt><dd style={{ textTransform: 'capitalize' }}>{auction.mode} auction</dd></div><div><dt>Purse</dt><dd>{cr(s.purse)}</dd></div>
           <div><dt>Squad size</dt><dd>{s.minSquad ? `min ${s.minSquad}, ` : ''}max {s.maxSquad}</dd></div><div><dt>Overseas</dt><dd>max {s.maxOverseas}</dd></div>
-          <div><dt>Timer</dt><dd>{s.initialSeconds}s, resets to {s.resetSeconds}s on bid</dd></div><div><dt>Players</dt><dd>{auction.poolTotal}</dd></div>
+          <div><dt>Timer</dt><dd>{s.initialSeconds}s, restarts on every bid</dd></div><div><dt>Players</dt><dd>{auction.poolTotal}</dd></div>
           <div><dt>Increments</dt><dd>5L &lt;1Cr · 10L &lt;2Cr · 20L &lt;5Cr · 25L above</dd></div>
         </dl>
         <p className="muted small">Unclaimed teams are controlled by bots. {s.minSquad ? `You must keep enough purse to still reach the minimum squad of ${s.minSquad} (₹0.30 Cr per missing player). ` : ''}Bids must beat the current bid by the increment, fit your purse and respect squad and overseas limits.</p>

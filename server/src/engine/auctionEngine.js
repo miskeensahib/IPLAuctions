@@ -92,7 +92,8 @@ async function createAuction({ name, mode = 'mini', play = 'solo', overrides = {
     settings[k] = Math.round(v);
   };
   num('purse', 1000, 100000); num('minSquad', 0, 40); num('maxSquad', 1, 40); num('maxOverseas', 0, 40);
-  num('initialSeconds', 5, 120); num('resetSeconds', 3, 60); num('breakSeconds', 1, 20); num('poolSize', 0, 1000);
+  num('initialSeconds', 5, 120); settings.resetSeconds = settings.initialSeconds; // one timer: a bid restarts it
+  num('resetSeconds', 3, 120); num('breakSeconds', 1, 20); num('poolSize', 0, 1000);
   if (settings.minSquad > settings.maxSquad) throw new HttpError(400, 'minSquad cannot exceed maxSquad');
   if (settings.purse < settings.minSquad * MIN_SLOT) throw new HttpError(400, `Purse is too small to fill a squad of ${settings.minSquad}`);
   if (!['random', 'sequential', 'marquee'].includes(settings.poolOrder)) settings.poolOrder = 'random';
@@ -271,26 +272,26 @@ async function placeBid(code, { teamId, clientId, amount, bot = false }) {
   checkReserve(team, bidAmt, a.settings);
 
   const now = Date.now();
-  const reset = now + a.settings.resetSeconds * 1000 + clockLag;
-  const extend = reset > new Date(a.live.endsAt).getTime(); // a bid never shortens the clock
-  const endsAt = new Date(extend ? reset : new Date(a.live.endsAt).getTime());
+  // Every successful bid restarts the countdown from the configured timer, whatever time was left (2s of 5s -> back to 5s).
+  const secs = a.settings.initialSeconds;
+  const endsAt = new Date(now + secs * 1000 + clockLag);
   // Optimistic concurrency: only succeeds if nobody bid since we read this lot.
   const res = await Auction.updateOne(
     { _id: a._id, status: 'live', 'live.rev': a.live.rev, 'live.phase': 'bidding', 'live.currentBid': a.live.currentBid, 'live.bidCount': a.live.bidCount },
-    { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt, ...(extend ? { 'live.clockSeconds': a.settings.resetSeconds } : {}) }, $inc: { 'live.bidCount': 1 } },
+    { $set: { 'live.currentBid': bidAmt, 'live.highestTeam': team.team, 'live.endsAt': endsAt, 'live.clockSeconds': secs }, $inc: { 'live.bidCount': 1 } },
   );
   if (!res.modifiedCount) throw new HttpError(409, 'Someone else bid first. Try again.');
   // The bid is saved: tell everyone NOW (team, amount, clock) before the slower bookkeeping below.
   const bidId = new mongoose.Types.ObjectId();
   const bidderName = bot ? null : (team.ownerName || null);
   patch(code, {
-    live: { rev: a.live.rev, phase: 'bidding', currentBid: bidAmt, highestTeam: String(team.team), bidCount: a.live.bidCount + 1, endsAt, ...(extend ? { clockSeconds: a.settings.resetSeconds } : {}) },
+    live: { rev: a.live.rev, phase: 'bidding', currentBid: bidAmt, highestTeam: String(team.team), bidCount: a.live.bidCount + 1, endsAt, clockSeconds: secs },
     bid: { _id: String(bidId), team: String(team.team), teamShort: team.short, amount: bidAmt, byBot: bot, bidderName, createdAt: new Date().toISOString() },
   });
   setTimer(code, 'close', endsAt - Date.now(), () => closeLot(code, a.live.rev));
   botKick(code);
   await Bid.create({ _id: bidId, auction: a._id, player: a.live.player, team: team.team, teamShort: team.short, amount: bidAmt, byBot: bot, bidderName });
-  await broadcast(code, extend ? now : undefined);
+  await broadcast(code, now);
 }
 
 async function pass(code, { teamId, clientId }) {
