@@ -9,9 +9,13 @@
    "2007/08",
    "2026"
   ],
-  "generatedAt": "2026-11-08T06:43:03.374Z"
+  "generatedAt": "2026-11-08T08:10:25.232Z"
  },
  "method": [
+  "Two kinds of score exist, and every score on screen says which it is:",
+  "STATS: built from real IPL career statistics (below) for players with enough IPL batting or bowling data.",
+  "ESTIMATED (\"est.\"): for players with no usable IPL record (new, uncapped or very few matches). Starting point = the median strength of newer (30 matches or fewer), stats-rated players of the same role, blended halfway with the overall median so no role is unfairly penalised. Bonus up to +9 for the price the franchise paid at the 2026 auction (+2.2 per natural-log step above ₹0.3 Cr), +0.4 per IPL match played (max +4), and up to ±5 for how the little he has played compares with other IPL players (strike rate / runs for batting, economy / wickets for bowling; full weight only from 90 balls). Always kept between 35 and 66.",
+  "Team strength = the average of all its purchased players’ scores (stats and estimates together).",
   "Every figure is computed from IPL ball-by-ball data (Cricsheet.org, 2008 to the latest season).",
   "Batting (qualifies with 100+ balls faced): batting average 22%, strike rate 22%, total runs 22%, milestones (100s count double 50s) 17%, boundaries (fours + 1.5 x sixes) 17%.",
   "Bowling (qualifies with 120+ balls bowled): wickets 25%, economy 25%, bowling average 20%, bowling strike rate 15%, best figures 15%.",
@@ -72,6 +76,7 @@
     }
    },
    "strength": 57.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 63.9,
@@ -127,6 +132,7 @@
     }
    },
    "strength": 61.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 59.7,
     "bowling": null,
@@ -182,6 +188,7 @@
     }
    },
    "strength": 65.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 9,
     "bowling": 68.8,
@@ -237,6 +244,7 @@
     }
    },
    "strength": 47.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 48.6,
@@ -292,6 +300,7 @@
     }
    },
    "strength": 90.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 88.2,
     "bowling": null,
@@ -347,6 +356,7 @@
     }
    },
    "strength": 45,
+   "kind": "stats",
    "breakdown": {
     "batting": 80.5,
     "bowling": 11.8,
@@ -403,6 +413,7 @@
     }
    },
    "strength": 51.2,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 57.2,
@@ -417,10 +428,38 @@
    "note": "Short IPL record (17 matches): score is pulled toward 50"
   },
   "dian-forrester": {
-   "matched": false
+   "matched": false,
+   "strength": 47.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4",
+   "estimated": true
   },
   "zak-foulkes": {
-   "matched": false
+   "matched": false,
+   "strength": 49.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 2,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4 +2 for the ₹0.75 Cr 2026 auction price",
+   "estimated": true
   },
   "ruturaj-gaikwad": {
    "matched": true,
@@ -464,6 +503,7 @@
     }
    },
    "strength": 83.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 84.2,
     "bowling": null,
@@ -518,10 +558,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.4 for 1 IPL match",
+   "estimated": true
   },
   "shreyas-gopal": {
    "matched": true,
@@ -565,6 +616,7 @@
     }
    },
    "strength": 41.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 13.8,
     "bowling": 74.2,
@@ -621,6 +673,7 @@
     }
    },
    "strength": 35.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 1.5,
@@ -676,6 +729,7 @@
     }
    },
    "strength": 51.3,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 58.3,
@@ -731,6 +785,7 @@
     }
    },
    "strength": 34.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 8.6,
@@ -786,6 +841,7 @@
     }
    },
    "strength": 52.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 55.6,
@@ -841,6 +897,7 @@
     }
    },
    "strength": 38.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 14.3,
     "bowling": null,
@@ -896,6 +953,7 @@
     }
    },
    "strength": 52.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 54.9,
     "bowling": null,
@@ -951,6 +1009,7 @@
     }
    },
    "strength": 52.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 60.4,
@@ -1006,6 +1065,7 @@
     }
    },
    "strength": 57,
+   "kind": "stats",
    "breakdown": {
     "batting": 69,
     "bowling": null,
@@ -1061,6 +1121,7 @@
     }
    },
    "strength": 72,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 76.5,
@@ -1075,7 +1136,21 @@
    "note": null
   },
   "macneil-noronha": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "jamie-overton": {
    "matched": true,
@@ -1119,6 +1194,7 @@
     }
    },
    "strength": 48.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 57.4,
@@ -1174,10 +1250,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 54.1,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 4,
+     "performance": 1.6,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +1.6 for how he has played so far +4 for 10 IPL matches",
+   "estimated": true
   },
   "sanju-samson": {
    "matched": true,
@@ -1221,6 +1308,7 @@
     }
    },
    "strength": 89.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 88,
     "bowling": null,
@@ -1276,6 +1364,7 @@
     }
    },
    "strength": 47,
+   "kind": "stats",
    "breakdown": {
     "batting": 54.5,
     "bowling": null,
@@ -1331,6 +1420,7 @@
     }
    },
    "strength": 44.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 25.9,
     "bowling": null,
@@ -1386,6 +1476,7 @@
     }
    },
    "strength": 41,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 8.4,
@@ -1440,10 +1531,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 62.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 8.5,
+     "experienceBonus": 2.4,
+     "performance": 2.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +8.5 for the ₹14.2 Cr 2026 auction price +2.1 for how he has played so far +2.4 for 6 IPL matches",
+   "estimated": true
   },
   "kuldip-yadav": {
    "matched": true,
@@ -1486,16 +1588,55 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 1.2,
+     "performance": -1.7,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -1.7 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "ruchit-ahir": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "atharva-ankolekar": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "raj-bawa": {
    "matched": true,
@@ -1538,10 +1679,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 3.2,
+     "performance": -1.2,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting or bowling data yet"
+   "note": "Estimated (very short IPL record): typical all-rounder newcomer 47.4 -1.2 for how he has played so far +3.2 for 8 IPL matches",
+   "estimated": true
   },
   "krish-bhagat": {
    "matched": true,
@@ -1584,10 +1736,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 1.2,
+     "performance": -1.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1.1 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "corbin-bosch": {
    "matched": true,
@@ -1631,6 +1794,7 @@
     }
    },
    "strength": 54.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 61,
@@ -1687,6 +1851,7 @@
     }
    },
    "strength": 70.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 74,
@@ -1742,6 +1907,7 @@
     }
    },
    "strength": 81.4,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 89.4,
@@ -1797,6 +1963,7 @@
     }
    },
    "strength": 63.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 24.8,
     "bowling": 69.1,
@@ -1852,6 +2019,7 @@
     }
    },
    "strength": 86.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 82.7,
     "bowling": null,
@@ -1907,6 +2075,7 @@
     }
    },
    "strength": 68.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 66.7,
     "bowling": null,
@@ -1962,6 +2131,7 @@
     }
    },
    "strength": 46.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 45.3,
@@ -1976,7 +2146,21 @@
    "note": "Short IPL record (11 matches): score is pulled toward 50"
   },
   "mohammed-izhar": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "will-jacks": {
    "matched": true,
@@ -2020,6 +2204,7 @@
     }
    },
    "strength": 64.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 65.8,
     "bowling": 33.4,
@@ -2075,6 +2260,7 @@
     }
    },
    "strength": 51,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 57.4,
@@ -2130,6 +2316,7 @@
     }
    },
    "strength": 45.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 47.5,
     "bowling": null,
@@ -2184,10 +2371,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 48.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": 1.6,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +1.6 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "danish-malewar": {
    "matched": true,
@@ -2230,10 +2428,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "mayank-markande": {
    "matched": true,
@@ -2277,6 +2486,7 @@
     }
    },
    "strength": 52.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 56.4,
@@ -2331,10 +2541,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.1,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 1.6,
+     "performance": -1.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 -1.1 for how he has played so far +1.6 for 4 IPL matches",
+   "estimated": true
   },
   "hardik-pandya": {
    "matched": true,
@@ -2378,6 +2599,7 @@
     }
    },
    "strength": 69.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 81,
     "bowling": 56,
@@ -2433,10 +2655,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.4 for 1 IPL match",
+   "estimated": true
   },
   "ryan-rickelton": {
    "matched": true,
@@ -2480,6 +2713,7 @@
     }
    },
    "strength": 78.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 77.1,
     "bowling": null,
@@ -2535,6 +2769,7 @@
     }
    },
    "strength": 50.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 54.4,
     "bowling": null,
@@ -2590,6 +2825,7 @@
     }
    },
    "strength": 43.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 15,
     "bowling": 64.1,
@@ -2646,6 +2882,7 @@
     }
    },
    "strength": 82.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 84.8,
     "bowling": 58.3,
@@ -2700,10 +2937,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.9,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 2.4,
+     "performance": -2.6,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -2.6 for how he has played so far +2.4 for 6 IPL matches",
+   "estimated": true
   },
   "shardul-thakur": {
    "matched": true,
@@ -2747,6 +2995,7 @@
     }
    },
    "strength": 59.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 35.7,
     "bowling": 60.9,
@@ -2802,6 +3051,7 @@
     }
    },
    "strength": 82,
+   "kind": "stats",
    "breakdown": {
     "batting": 81.1,
     "bowling": null,
@@ -2857,6 +3107,7 @@
     }
    },
    "strength": 88.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 90.6,
     "bowling": null,
@@ -2912,6 +3163,7 @@
     }
    },
    "strength": 46.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 34.9,
     "bowling": null,
@@ -2926,10 +3178,38 @@
    "note": "Short IPL record (9 matches): score is pulled toward 50"
   },
   "kanishk-chouhan": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "jordan-cox": {
-   "matched": false
+   "matched": false,
+   "strength": 50.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 2,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical wicketkeeper newcomer 48.5 +2 for the ₹0.75 Cr 2026 auction price",
+   "estimated": true
   },
   "rasikh-dar": {
    "matched": true,
@@ -2973,6 +3253,7 @@
     }
    },
    "strength": 51.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 55.1,
@@ -3028,6 +3309,7 @@
     }
    },
    "strength": 76.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 76,
     "bowling": null,
@@ -3083,6 +3365,7 @@
     }
    },
    "strength": 42,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 44.6,
@@ -3097,7 +3380,21 @@
    "note": null
   },
   "satvik-deswal": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "jacob-duffy": {
    "matched": true,
@@ -3141,6 +3438,7 @@
     }
    },
    "strength": 47.1,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 38.3,
@@ -3195,10 +3493,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 44.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 1.2,
+     "performance": -2.9,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -2.9 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "josh-hazlewood": {
    "matched": true,
@@ -3242,6 +3551,7 @@
     }
    },
    "strength": 71.3,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 77.5,
@@ -3297,6 +3607,7 @@
     }
    },
    "strength": 76.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 78.4,
     "bowling": null,
@@ -3352,6 +3663,7 @@
     }
    },
    "strength": 88.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 90,
     "bowling": 12.9,
@@ -3407,6 +3719,7 @@
     }
    },
    "strength": 47.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 18.5,
     "bowling": 83.2,
@@ -3422,10 +3735,38 @@
    "note": null
   },
   "vihaan-malhotra": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "vicky-ostwal": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "devdutt-padikkal": {
    "matched": true,
@@ -3469,6 +3810,7 @@
     }
    },
    "strength": 73.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 73.6,
     "bowling": null,
@@ -3524,6 +3866,7 @@
     }
    },
    "strength": 63.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 64.2,
     "bowling": 65.4,
@@ -3580,6 +3923,7 @@
     }
    },
    "strength": 80.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 83.8,
     "bowling": null,
@@ -3635,6 +3979,7 @@
     }
    },
    "strength": 83.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 82.6,
     "bowling": null,
@@ -3690,6 +4035,7 @@
     }
    },
    "strength": 71.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 63.1,
     "bowling": null,
@@ -3745,6 +4091,7 @@
     }
    },
    "strength": 33,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 36.4,
@@ -3800,6 +4147,7 @@
     }
    },
    "strength": 38.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 52.9,
     "bowling": 27,
@@ -3855,10 +4203,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 1.2,
+     "performance": -1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -1 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "swapnil-singh": {
    "matched": true,
@@ -3901,10 +4260,21 @@
      "runOuts": 1
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 4,
+     "performance": -1.9,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1.9 for how he has played so far +4 for 14 IPL matches",
+   "estimated": true
   },
   "nuwan-thushara": {
    "matched": true,
@@ -3948,6 +4318,7 @@
     }
    },
    "strength": 46,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 35.9,
@@ -3962,7 +4333,21 @@
    "note": "Short IPL record (8 matches): score is pulled toward 50"
   },
   "mangesh-yadav": {
-   "matched": false
+   "matched": false,
+   "strength": 52.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 6.3,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46 +6.3 for the ₹5.2 Cr 2026 auction price",
+   "estimated": true
   },
   "finn-allen": {
    "matched": true,
@@ -4006,6 +4391,7 @@
     }
    },
    "strength": 50.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 68,
     "bowling": null,
@@ -4061,6 +4447,7 @@
     }
    },
    "strength": 50.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 51.4,
@@ -4116,6 +4503,7 @@
     }
    },
    "strength": 77.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 83.9,
@@ -4170,10 +4558,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 53.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 5.1,
+     "experienceBonus": 0.8,
+     "performance": -0.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +5.1 for the ₹3 Cr 2026 auction price -0.8 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "akash-deep": {
    "matched": true,
@@ -4217,6 +4616,7 @@
     }
    },
    "strength": 33.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 15,
@@ -4271,10 +4671,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.9,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 1.6,
+     "performance": 2.3,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +2.3 for how he has played so far +1.6 for 4 IPL matches",
+   "estimated": true
   },
   "cameron-green": {
    "matched": true,
@@ -4318,6 +4729,7 @@
     }
    },
    "strength": 76.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 76.7,
     "bowling": 31.5,
@@ -4332,7 +4744,21 @@
    "note": null
   },
   "daksh-kamra": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "mustafizur-rahman": {
    "matched": true,
@@ -4376,6 +4802,7 @@
     }
    },
    "strength": 61.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 68.1,
@@ -4430,10 +4857,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46.9,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": 0.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +0.1 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "sunil-narine": {
    "matched": true,
@@ -4477,6 +4915,7 @@
     }
    },
    "strength": 78.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 70.4,
     "bowling": 85.4,
@@ -4532,6 +4971,7 @@
     }
    },
    "strength": 76.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 76.1,
     "bowling": null,
@@ -4587,6 +5027,7 @@
     }
    },
    "strength": 70.2,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 74.7,
@@ -4642,6 +5083,7 @@
     }
    },
    "strength": 56.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 52.7,
     "bowling": null,
@@ -4697,6 +5139,7 @@
     }
    },
    "strength": 69.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 73,
     "bowling": null,
@@ -4752,6 +5195,7 @@
     }
    },
    "strength": 79.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 80.8,
     "bowling": null,
@@ -4807,6 +5251,7 @@
     }
    },
    "strength": 43.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 40.1,
     "bowling": null,
@@ -4862,6 +5307,7 @@
     }
    },
    "strength": 57.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 58.1,
@@ -4876,7 +5322,21 @@
    "note": null
   },
   "sarthak-ranjan": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "rachin-ravindra": {
    "matched": true,
@@ -4920,6 +5380,7 @@
     }
    },
    "strength": 56,
+   "kind": "stats",
    "breakdown": {
     "batting": 54.3,
     "bowling": null,
@@ -4976,6 +5437,7 @@
     }
    },
    "strength": 46.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 38.7,
@@ -5032,6 +5494,7 @@
     }
    },
    "strength": 30.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 31.7,
@@ -5086,10 +5549,21 @@
      "runOuts": 1
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 52.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 3.5,
+     "experienceBonus": 2.4,
+     "performance": -1.9,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +3.5 for the ₹1.5 Cr 2026 auction price -1.9 for how he has played so far +2.4 for 6 IPL matches",
+   "estimated": true
   },
   "rinku-singh": {
    "matched": true,
@@ -5133,6 +5607,7 @@
     }
    },
    "strength": 78.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 76.7,
     "bowling": null,
@@ -5147,10 +5622,38 @@
    "note": null
   },
   "luvnith-sisodia": {
-   "matched": false
+   "matched": false,
+   "strength": 48.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical wicketkeeper newcomer 48.5",
+   "estimated": true
   },
   "prashant-solanki": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "rahul-tripathi": {
    "matched": true,
@@ -5194,6 +5697,7 @@
     }
    },
    "strength": 71.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 74.4,
     "bowling": null,
@@ -5249,6 +5753,7 @@
     }
    },
    "strength": 35.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 37.2,
@@ -5304,6 +5809,7 @@
     }
    },
    "strength": 58.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 62.5,
@@ -5318,7 +5824,21 @@
    "note": "Short IPL record (26 matches): score is pulled toward 50"
   },
   "rs-ambrish": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "zeeshan-ansari": {
    "matched": true,
@@ -5362,6 +5882,7 @@
     }
    },
    "strength": 39.4,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 11.9,
@@ -5416,13 +5937,38 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 54.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 4,
+     "performance": 1.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +1.8 for how he has played so far +4 for 14 IPL matches",
+   "estimated": true
   },
   "brydon-carse": {
-   "matched": false
+   "matched": false,
+   "strength": 47.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4",
+   "estimated": true
   },
   "gerald-coetzee": {
    "matched": true,
@@ -5466,6 +6012,7 @@
     }
    },
    "strength": 46.2,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 42.9,
@@ -5521,6 +6068,7 @@
     }
    },
    "strength": 58.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 57.3,
     "bowling": 60.3,
@@ -5576,6 +6124,7 @@
     }
    },
    "strength": 62.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 65.8,
@@ -5631,6 +6180,7 @@
     }
    },
    "strength": 50,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 49.8,
@@ -5645,10 +6195,38 @@
    "note": "Short IPL record (11 matches): score is pulled toward 50"
   },
   "jack-edwards": {
-   "matched": false
+   "matched": false,
+   "strength": 52.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 5.1,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4 +5.1 for the ₹3 Cr 2026 auction price",
+   "estimated": true
   },
   "krains-fuletra": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "travis-head": {
    "matched": true,
@@ -5692,6 +6270,7 @@
     }
    },
    "strength": 75.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 83,
     "bowling": null,
@@ -5747,6 +6326,7 @@
     }
    },
    "strength": 51.1,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 53.3,
@@ -5802,6 +6382,7 @@
     }
    },
    "strength": 86.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 85.9,
     "bowling": null,
@@ -5857,6 +6438,7 @@
     }
    },
    "strength": 90.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 89.3,
     "bowling": null,
@@ -5871,7 +6453,21 @@
    "note": null
   },
   "amit-kumar": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "shivang-kumar": {
    "matched": true,
@@ -5914,10 +6510,20 @@
      "runOuts": 2
     }
    },
-   "strength": null,
-   "breakdown": null,
-   "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "strength": 37.1,
+   "kind": "stats",
+   "breakdown": {
+    "batting": null,
+    "bowling": 21.5,
+    "fielding": 9.4,
+    "weights": {
+     "bowl": 0.9,
+     "field": 0.1
+    },
+    "confidence": 0.433
+   },
+   "rated": true,
+   "note": "Short IPL record (13 matches): score is pulled toward 50"
   },
   "liam-livingstone": {
    "matched": true,
@@ -5961,6 +6567,7 @@
     }
    },
    "strength": 71.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 70.9,
     "bowling": 33.5,
@@ -6015,10 +6622,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": -0.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -0.4 for how he has played so far +0.4 for 1 IPL match",
+   "estimated": true
   },
   "shivam-mavi": {
    "matched": true,
@@ -6062,6 +6680,7 @@
     }
    },
    "strength": 57.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 55.5,
@@ -6116,10 +6735,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 52.9,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": 1.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +1.4 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "nitish-kumar-reddy": {
    "matched": true,
@@ -6163,6 +6793,7 @@
     }
    },
    "strength": 47.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 66.1,
     "bowling": 19.8,
@@ -6219,6 +6850,7 @@
     }
    },
    "strength": 73.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 21.1,
     "bowling": 77.2,
@@ -6273,10 +6905,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": -0.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -0.1 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "sakib-hussain": {
    "matched": true,
@@ -6320,6 +6963,7 @@
     }
    },
    "strength": 49.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 54.9,
@@ -6375,6 +7019,7 @@
     }
    },
    "strength": 83.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 86.5,
     "bowling": 22.6,
@@ -6429,13 +7074,38 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 2.4,
+     "performance": -1.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1.4 for how he has played so far +2.4 for 6 IPL matches",
+   "estimated": true
   },
   "onkar-tarmale": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "jaydev-unadkat": {
    "matched": true,
@@ -6479,6 +7149,7 @@
     }
    },
    "strength": 63.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 19.4,
     "bowling": 65.8,
@@ -6534,6 +7205,7 @@
     }
    },
    "strength": 52.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 50.1,
     "bowling": null,
@@ -6589,6 +7261,7 @@
     }
    },
    "strength": 68.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 37,
     "bowling": 71.7,
@@ -6644,6 +7317,7 @@
     }
    },
    "strength": 62.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 63.5,
@@ -6699,6 +7373,7 @@
     }
    },
    "strength": 47,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 45,
@@ -6713,7 +7388,21 @@
    "note": "Short IPL record (18 matches): score is pulled toward 50"
   },
   "emanjot-singh-chahal": {
-   "matched": false
+   "matched": false,
+   "strength": 47.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4",
+   "estimated": true
   },
   "yudhvir-singh-charak": {
    "matched": true,
@@ -6757,6 +7446,7 @@
     }
    },
    "strength": 43.3,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 30.6,
@@ -6812,6 +7502,7 @@
     }
    },
    "strength": 57.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 62.9,
     "bowling": 51.3,
@@ -6868,6 +7559,7 @@
     }
    },
    "strength": 46.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 73.7,
     "bowling": 11.6,
@@ -6924,6 +7616,7 @@
     }
    },
    "strength": 45.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 48.9,
@@ -6979,6 +7672,7 @@
     }
    },
    "strength": 42.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 42,
     "bowling": null,
@@ -7034,6 +7728,7 @@
     }
    },
    "strength": 60.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 59.4,
     "bowling": null,
@@ -7089,6 +7784,7 @@
     }
    },
    "strength": 76.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 73.6,
     "bowling": null,
@@ -7144,6 +7840,7 @@
     }
    },
    "strength": 74.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 74.4,
     "bowling": 74.5,
@@ -7200,6 +7897,7 @@
     }
    },
    "strength": 85.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 88,
     "bowling": null,
@@ -7255,6 +7953,7 @@
     }
    },
    "strength": 81.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 77.9,
     "bowling": null,
@@ -7309,10 +8008,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 44.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 1.6,
+     "performance": -3.3,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -3.3 for how he has played so far +1.6 for 4 IPL matches",
+   "estimated": true
   },
   "adam-milne": {
    "matched": true,
@@ -7356,6 +8066,7 @@
     }
    },
    "strength": 38.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 11.9,
@@ -7410,13 +8121,38 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 48.8,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 2.4,
+     "experienceBonus": 0.8,
+     "performance": -0.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +2.4 for the ₹0.9 Cr 2026 auction price -0.4 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "aman-rao": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "lhuan-dr-pretorius": {
    "matched": true,
@@ -7459,10 +8195,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "yash-punja": {
    "matched": true,
@@ -7505,10 +8252,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 52.8,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 3.2,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +3.2 for 8 IPL matches",
+   "estimated": true
   },
   "vignesh-puthur": {
    "matched": true,
@@ -7551,10 +8309,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +2 for 5 IPL matches",
+   "estimated": true
   },
   "kuldeep-sen": {
    "matched": true,
@@ -7598,6 +8367,7 @@
     }
    },
    "strength": 50.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 52.4,
@@ -7652,10 +8422,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 4,
+     "performance": -2.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -2.1 for how he has played so far +4 for 10 IPL matches",
+   "estimated": true
   },
   "brijesh-sharma": {
    "matched": true,
@@ -7699,6 +8480,7 @@
     }
    },
    "strength": 41.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 34.2,
@@ -7754,6 +8536,7 @@
     }
    },
    "strength": 69.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 75.7,
@@ -7808,10 +8591,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.4 for 1 IPL match",
+   "estimated": true
   },
   "vaibhav-sooryavanshi": {
    "matched": true,
@@ -7855,6 +8649,7 @@
     }
    },
    "strength": 69.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 83.8,
     "bowling": null,
@@ -7910,6 +8705,7 @@
     }
    },
    "strength": 72.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 76.3,
     "bowling": null,
@@ -7924,7 +8720,21 @@
    "note": null
   },
   "pyla-avinash": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "azmatullah-omarzai": {
    "matched": true,
@@ -7968,6 +8778,7 @@
     }
    },
    "strength": 34,
+   "kind": "stats",
    "breakdown": {
     "batting": 31.3,
     "bowling": 26.2,
@@ -8024,6 +8835,7 @@
     }
    },
    "strength": 35.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 8.6,
@@ -8079,6 +8891,7 @@
     }
    },
    "strength": 57.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 28.7,
     "bowling": 60,
@@ -8134,6 +8947,7 @@
     }
    },
    "strength": 78.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 85.5,
@@ -8189,6 +9003,7 @@
     }
    },
    "strength": 59.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 71.8,
     "bowling": null,
@@ -8243,10 +9058,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": -1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "ben-dwarshuis": {
    "matched": true,
@@ -8289,10 +9115,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": -0.9,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -0.9 for how he has played so far +0.4 for 1 IPL match",
+   "estimated": true
   },
   "lockie-ferguson": {
    "matched": true,
@@ -8336,6 +9173,7 @@
     }
    },
    "strength": 50.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 53.4,
@@ -8391,6 +9229,7 @@
     }
    },
    "strength": 85.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 86.7,
     "bowling": null,
@@ -8446,6 +9285,7 @@
     }
    },
    "strength": 34.1,
+   "kind": "stats",
    "breakdown": {
     "batting": 15.4,
     "bowling": 41.8,
@@ -8501,13 +9341,38 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.4 for 1 IPL match",
+   "estimated": true
   },
   "vishal-nishad": {
-   "matched": false
+   "matched": false,
+   "strength": 46,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46",
+   "estimated": true
   },
   "mitch-owen": {
    "matched": true,
@@ -8550,10 +9415,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.4 for 1 IPL match",
+   "estimated": true
   },
   "suryansh-shedge": {
    "matched": true,
@@ -8597,6 +9473,7 @@
     }
    },
    "strength": 47.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 44.7,
     "bowling": null,
@@ -8652,6 +9529,7 @@
     }
    },
    "strength": 64.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 69,
@@ -8666,10 +9544,38 @@
    "note": null
   },
   "harnoor-singh": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "prabhsimran-singh": {
-   "matched": false
+   "matched": false,
+   "strength": 48.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical wicketkeeper newcomer 48.5",
+   "estimated": true
   },
   "shashank-singh": {
    "matched": true,
@@ -8713,6 +9619,7 @@
     }
    },
    "strength": 74,
+   "kind": "stats",
    "breakdown": {
     "batting": 76.7,
     "bowling": null,
@@ -8768,6 +9675,7 @@
     }
    },
    "strength": 74.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 80.6,
     "bowling": 50.9,
@@ -8823,6 +9731,7 @@
     }
    },
    "strength": 48.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 52.6,
@@ -8877,10 +9786,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 48.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 2.8,
+     "performance": -2.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 -2.8 for how he has played so far +2.8 for 7 IPL matches",
+   "estimated": true
   },
   "vijaykumar-vyshak": {
    "matched": true,
@@ -8924,6 +9844,7 @@
     }
    },
    "strength": 40.3,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 38.7,
@@ -8979,6 +9900,7 @@
     }
    },
    "strength": 58.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 60.1,
     "bowling": null,
@@ -8993,7 +9915,21 @@
    "note": null
   },
   "rehan-ahmed": {
-   "matched": false
+   "matched": false,
+   "strength": 49.6,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical batter newcomer 49.6",
+   "estimated": true
   },
   "dushmantha-chameera": {
    "matched": true,
@@ -9037,6 +9973,7 @@
     }
    },
    "strength": 27.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 18.7,
@@ -9051,7 +9988,21 @@
    "note": "Short IPL record (21 matches): score is pulled toward 50"
   },
   "ben-duckett": {
-   "matched": false
+   "matched": false,
+   "strength": 52.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 4.2,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical wicketkeeper newcomer 48.5 +4.2 for the ₹2 Cr 2026 auction price",
+   "estimated": true
   },
   "kyle-jamieson": {
    "matched": true,
@@ -9095,6 +10046,7 @@
     }
    },
    "strength": 42.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 37.9,
@@ -9150,6 +10102,7 @@
     }
    },
    "strength": 46.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 45.8,
@@ -9164,7 +10117,21 @@
    "note": null
   },
   "ajay-mandal": {
-   "matched": false
+   "matched": false,
+   "strength": 47.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical all-rounder newcomer 47.4",
+   "estimated": true
   },
   "david-miller": {
    "matched": true,
@@ -9208,6 +10175,7 @@
     }
    },
    "strength": 85.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 85,
     "bowling": null,
@@ -9262,10 +10230,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.1,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 7.3,
+     "experienceBonus": 2,
+     "performance": -4.2,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +7.3 for the ₹8.4 Cr 2026 auction price -4.2 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "karun-nair": {
    "matched": true,
@@ -9309,6 +10288,7 @@
     }
    },
    "strength": 64.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 66.2,
     "bowling": null,
@@ -9364,6 +10344,7 @@
     }
    },
    "strength": 51.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 55.7,
@@ -9419,6 +10400,7 @@
     }
    },
    "strength": 70,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 78.9,
@@ -9474,6 +10456,7 @@
     }
    },
    "strength": 35.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 27.3,
@@ -9528,10 +10511,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 50.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 1.6,
+     "performance": -0.5,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -0.5 for how he has played so far +1.6 for 4 IPL matches",
+   "estimated": true
   },
   "axar-patel": {
    "matched": true,
@@ -9575,6 +10569,7 @@
     }
    },
    "strength": 67.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 63.7,
     "bowling": 69.1,
@@ -9631,6 +10626,7 @@
     }
    },
    "strength": 58.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 63.3,
     "bowling": null,
@@ -9686,6 +10682,7 @@
     }
    },
    "strength": 91.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 92.1,
     "bowling": null,
@@ -9741,6 +10738,7 @@
     }
    },
    "strength": 74.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 80.2,
     "bowling": 34.3,
@@ -9796,6 +10794,7 @@
     }
    },
    "strength": 56.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 61.8,
     "bowling": null,
@@ -9851,6 +10850,7 @@
     }
    },
    "strength": 61.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 67,
     "bowling": null,
@@ -9906,6 +10906,7 @@
     }
    },
    "strength": 69.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 75.1,
     "bowling": null,
@@ -9961,6 +10962,7 @@
     }
    },
    "strength": 50.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 57.2,
     "bowling": null,
@@ -10016,6 +11018,7 @@
     }
    },
    "strength": 78,
+   "kind": "stats",
    "breakdown": {
     "batting": 4.4,
     "bowling": 76.9,
@@ -10071,6 +11074,7 @@
     }
    },
    "strength": 77.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 75.6,
     "bowling": null,
@@ -10125,10 +11129,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.8,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": 0.2,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +0.2 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "tripurana-vijay": {
    "matched": true,
@@ -10171,10 +11186,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.8,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": -0.7,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -0.7 for how he has played so far +0.4 for 1 IPL match",
+   "estimated": true
   },
   "kuldeep-yadav": {
    "matched": true,
@@ -10218,6 +11244,7 @@
     }
    },
    "strength": 67.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 12.1,
     "bowling": 73.2,
@@ -10273,6 +11300,7 @@
     }
    },
    "strength": 64.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 67.3,
     "bowling": null,
@@ -10327,10 +11355,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 48.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": -0.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 -0.4 for how he has played so far +0.4 for 1 IPL match",
+   "estimated": true
   },
   "mukul-choudhary": {
    "matched": true,
@@ -10374,6 +11413,7 @@
     }
    },
    "strength": 47.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 45.2,
     "bowling": null,
@@ -10429,6 +11469,7 @@
     }
    },
    "strength": 65.1,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 75.9,
@@ -10485,6 +11526,7 @@
     }
    },
    "strength": 65.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 72.9,
     "bowling": null,
@@ -10540,6 +11582,7 @@
     }
    },
    "strength": 57.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 62.5,
@@ -10594,10 +11637,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 1.6,
+     "performance": -1.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1.8 for how he has played so far +1.6 for 4 IPL matches",
+   "estimated": true
   },
   "george-linde": {
    "matched": true,
@@ -10640,10 +11694,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 47.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 47.4,
+     "priceBonus": 0,
+     "experienceBonus": 1.2,
+     "performance": -1.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting or bowling data yet"
+   "note": "Estimated (very short IPL record): typical all-rounder newcomer 47.4 -1.1 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "aiden-markram": {
    "matched": true,
@@ -10687,6 +11752,7 @@
     }
    },
    "strength": 74.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 73.1,
     "bowling": 9,
@@ -10742,6 +11808,7 @@
     }
    },
    "strength": 75.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 81.8,
     "bowling": 73.9,
@@ -10797,6 +11864,7 @@
     }
    },
    "strength": 67.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 74.6,
@@ -10852,6 +11920,7 @@
     }
    },
    "strength": 54.4,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 57.7,
@@ -10907,6 +11976,7 @@
     }
    },
    "strength": 90.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 88.7,
     "bowling": null,
@@ -10962,6 +12032,7 @@
     }
    },
    "strength": 85.9,
+   "kind": "stats",
    "breakdown": {
     "batting": 87,
     "bowling": null,
@@ -11016,10 +12087,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 54.3,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 4.4,
+     "experienceBonus": 1.2,
+     "performance": -0.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +4.4 for the ₹2.2 Cr 2026 auction price -0.8 for how he has played so far +1.2 for 3 IPL matches",
+   "estimated": true
   },
   "digvesh-singh-rathi": {
    "matched": true,
@@ -11063,6 +12145,7 @@
     }
    },
    "strength": 32.7,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 26,
@@ -11118,6 +12201,7 @@
     }
    },
    "strength": 54,
+   "kind": "stats",
    "breakdown": {
     "batting": 52.1,
     "bowling": null,
@@ -11173,6 +12257,7 @@
     }
    },
    "strength": 40.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 43,
     "bowling": 35.3,
@@ -11187,7 +12272,7 @@
    "rated": true,
    "note": null
   },
-  "mohammed-shami": {
+  "mohammad-shami": {
    "matched": true,
    "cricsheetId": "8cf9814c",
    "cricsheetName": "Mohammed Shami",
@@ -11229,6 +12314,7 @@
     }
    },
    "strength": 66.7,
+   "kind": "stats",
    "breakdown": {
     "batting": 6.7,
     "bowling": 71.1,
@@ -11284,6 +12370,7 @@
     }
    },
    "strength": 45,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 31.9,
@@ -11339,6 +12426,7 @@
     }
    },
    "strength": 44.4,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 38.9,
@@ -11393,10 +12481,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 54.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 3.6,
+     "performance": 1.4,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 +1.4 for how he has played so far +3.6 for 9 IPL matches",
+   "estimated": true
   },
   "arjun-tendulkar": {
    "matched": true,
@@ -11439,13 +12538,38 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46.2,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 2.4,
+     "performance": -2.2,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -2.2 for how he has played so far +2.4 for 6 IPL matches",
+   "estimated": true
   },
   "naman-tiwari": {
-   "matched": false
+   "matched": false,
+   "strength": 48.7,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 2.6,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical bowler newcomer 46 +2.6 for the ₹1 Cr 2026 auction price",
+   "estimated": true
   },
   "mayank-yadav": {
    "matched": true,
@@ -11489,6 +12613,7 @@
     }
    },
    "strength": 41.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 23.5,
@@ -11544,6 +12669,7 @@
     }
    },
    "strength": 41.8,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 35.3,
@@ -11599,6 +12725,7 @@
     }
    },
    "strength": 34.3,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 31.2,
@@ -11653,10 +12780,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 52.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 4.2,
+     "experienceBonus": 0.8,
+     "performance": -1.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 +4.2 for the ₹2 Cr 2026 auction price -1.1 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "gurnoor-brar": {
    "matched": true,
@@ -11699,10 +12837,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.4,
+     "performance": -1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -1 for how he has played so far +0.4 for 1 IPL match",
+   "estimated": true
   },
   "jos-buttler": {
    "matched": true,
@@ -11746,6 +12895,7 @@
     }
    },
    "strength": 93.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 93.7,
     "bowling": null,
@@ -11760,7 +12910,21 @@
    "note": null
   },
   "connor-esterhuizen": {
-   "matched": false
+   "matched": false,
+   "strength": 48.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 0,
+     "performance": 0,
+     "min": 35,
+     "max": 66
+    }
+   },
+   "note": "Estimated (no IPL record): typical wicketkeeper newcomer 48.5",
+   "estimated": true
   },
   "shubman-gill": {
    "matched": true,
@@ -11804,6 +12968,7 @@
     }
    },
    "strength": 88.4,
+   "kind": "stats",
    "breakdown": {
     "batting": 90.8,
     "bowling": null,
@@ -11859,6 +13024,7 @@
     }
    },
    "strength": 51.8,
+   "kind": "stats",
    "breakdown": {
     "batting": 27.4,
     "bowling": 72.9,
@@ -11915,6 +13081,7 @@
     }
    },
    "strength": 37.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 9,
@@ -11970,6 +13137,7 @@
     }
    },
    "strength": 60.9,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 64.5,
@@ -12024,10 +13192,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 49.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 48.5,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": -1.1,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical wicketkeeper newcomer 48.5 -1.1 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "glenn-phillips": {
    "matched": true,
@@ -12071,6 +13250,7 @@
     }
    },
    "strength": 42.6,
+   "kind": "stats",
    "breakdown": {
     "batting": 15.3,
     "bowling": null,
@@ -12125,10 +13305,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 45.4,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 0.8,
+     "performance": -1.5,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -1.5 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "kagiso-rabada": {
    "matched": true,
@@ -12172,6 +13363,7 @@
     }
    },
    "strength": 76.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 19.8,
     "bowling": 78.5,
@@ -12227,6 +13419,7 @@
     }
    },
    "strength": 82.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 50.9,
     "bowling": 85.1,
@@ -12282,6 +13475,7 @@
     }
    },
    "strength": 49.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 34.9,
     "bowling": null,
@@ -12337,6 +13531,7 @@
     }
    },
    "strength": 65.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 68.4,
@@ -12392,6 +13587,7 @@
     }
    },
    "strength": 84.3,
+   "kind": "stats",
    "breakdown": {
     "batting": 90,
     "bowling": null,
@@ -12447,6 +13643,7 @@
     }
    },
    "strength": 58.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 57.3,
     "bowling": null,
@@ -12502,6 +13699,7 @@
     }
    },
    "strength": 43.1,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 16,
@@ -12557,6 +13755,7 @@
     }
    },
    "strength": 56.5,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 61.4,
@@ -12611,10 +13810,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 51.5,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 49.6,
+     "priceBonus": 0,
+     "experienceBonus": 3.2,
+     "performance": -1.3,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL batting data yet"
+   "note": "Estimated (very short IPL record): typical batter newcomer 49.6 -1.3 for how he has played so far +3.2 for 8 IPL matches",
+   "estimated": true
   },
   "mohammed-siraj": {
    "matched": true,
@@ -12658,6 +13868,7 @@
     }
    },
    "strength": 63.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 5.8,
     "bowling": 65.9,
@@ -12712,10 +13923,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 46.2,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 0,
+     "experienceBonus": 2,
+     "performance": -1.8,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 -1.8 for how he has played so far +2 for 5 IPL matches",
+   "estimated": true
   },
   "rahul-tewatia": {
    "matched": true,
@@ -12759,6 +13981,7 @@
     }
    },
    "strength": 61.5,
+   "kind": "stats",
    "breakdown": {
     "batting": 62.4,
     "bowling": 51,
@@ -12814,6 +14037,7 @@
     }
    },
    "strength": 50.2,
+   "kind": "stats",
    "breakdown": {
     "batting": 54.4,
     "bowling": 50.9,
@@ -12869,10 +14093,21 @@
      "runOuts": 0
     }
    },
-   "strength": null,
-   "breakdown": null,
+   "strength": 47,
+   "kind": "estimated",
+   "breakdown": {
+    "estimate": {
+     "rolePrior": 46,
+     "priceBonus": 2,
+     "experienceBonus": 0.8,
+     "performance": -1.9,
+     "min": 35,
+     "max": 66
+    }
+   },
    "rated": false,
-   "note": "Not enough IPL bowling data yet"
+   "note": "Estimated (very short IPL record): typical bowler newcomer 46 +2 for the ₹0.75 Cr 2026 auction price -1.9 for how he has played so far +0.8 for 2 IPL matches",
+   "estimated": true
   },
   "jayant-yadav": {
    "matched": true,
@@ -12916,6 +14151,7 @@
     }
    },
    "strength": 38.6,
+   "kind": "stats",
    "breakdown": {
     "batting": null,
     "bowling": 29.5,

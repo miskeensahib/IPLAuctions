@@ -4,7 +4,7 @@ const { HttpError, wrap, requireAdmin } = require('../lib/http');
 const { slugify } = require('../scripts/seedData');
 
 // Strength and career stats are only released for players SOLD in an auction (GET /api/auctions/:code/strength).
-const HIDE = '-iplStats -strength -strengthBreakdown -strengthNote -statsMatchName -statsVersion';
+const HIDE = '-iplStats -strength -strengthKind -strengthBreakdown -strengthNote -statsMatchName -statsVersion';
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const FIELDS = ['name', 'country', 'role', 'team', 'imageThumb', 'marqueeRank', 'previousTeam', 'basePrice', 'basePriceVerified', 'auctionStatus', 'soldTo', 'soldPrice', 'profileVerified', 'image', 'source', 'notes', 'stats'];
 const pick = (body) => Object.fromEntries(FIELDS.filter((k) => body[k] !== undefined).map((k) => [k, body[k]]));

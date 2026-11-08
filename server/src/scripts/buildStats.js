@@ -7,11 +7,11 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-const { STAT_THRESHOLDS, METHOD, strengthFor, percentileTable } = require('../lib/strength');
+const { STAT_THRESHOLDS, METHOD, strengthFor, estimateStrength, percentileTable, performanceSignal } = require('../lib/strength');
 
 const ZIP_URL = 'https://cricsheet.org/downloads/ipl_json.zip';
 const squads = require('./squads.json').players;
-const { slugify } = require('./seedData');
+const { slugify, results: AUCTION_RESULTS } = require('./seedData');
 
 // ---------- minimal zip reader (no dependency) ----------
 function* zipEntries(buf) {
@@ -181,9 +181,10 @@ const findArg = process.argv.find((a) => a.startsWith('--find='));
   const table = percentileTable([...P.values()], STAT_THRESHOLDS); // reference population = every IPL player who qualifies
   const { out, report } = matchPlayers(P);
   const players = {};
+  const draft = [];
   for (const p of squads) {
     const slug = slugify(p.name), c = out[slug];
-    if (!c) { players[slug] = { matched: false }; continue; }
+    if (!c) { players[slug] = { matched: false }; draft.push({ p, slug, s: null }); continue; }
     const s = c.s;
     const stats = {
       matches: s.matches, seasons: s.seasons.size, firstSeason: Math.min(...s.seasons), lastSeason: s.lastSeason,
@@ -192,9 +193,28 @@ const findArg = process.argv.find((a) => a.startsWith('--find='));
       fielding: { catches: s.field.catches, stumpings: s.field.stumpings, runOuts: s.field.runouts },
     };
     const r = strengthFor(p.role, s, table);
-    players[slug] = { matched: true, cricsheetId: c.id, cricsheetName: c.name, stats, strength: r.strength, breakdown: r.breakdown, rated: r.strength !== null, note: r.note };
+    players[slug] = { matched: true, cricsheetId: c.id, cricsheetName: c.name, stats, strength: r.strength, kind: r.strength === null ? null : 'stats', breakdown: r.breakdown, rated: r.strength !== null, note: r.note };
+    draft.push({ p, slug, s });
   }
+  // role priors for estimates: median strength of NEWER stats-rated players (30 matches or fewer) in the same role
+  const median = (a) => { const b = [...a].sort((x, y) => x - y); return b.length ? (b[b.length >> 1] + b[(b.length - 1) >> 1]) / 2 : null; };
+  const pool = draft.filter((d) => d.s && players[d.slug].rated && d.s.matches <= STAT_THRESHOLDS.fullConfidenceMatches);
+  const rolePrior = { all: median(pool.map((d) => players[d.slug].strength)) };
+  // each role's baseline is blended halfway toward the overall baseline, so a role that merely HAPPENS to have weaker newcomers in the data is not unfairly penalised
+  for (const r of ['Batter', 'Bowler', 'All-rounder', 'Wicketkeeper']) { const m = median(pool.filter((d) => d.p.role === r).map((d) => players[d.slug].strength)); rolePrior[r] = m == null ? rolePrior.all : (m + rolePrior.all) / 2; }
+  console.log('role priors for estimates:', JSON.stringify(rolePrior));
+  let estimated = 0;
+  for (const d of draft) {
+    const x = players[d.slug];
+    if (x.rated) continue;
+    const price = AUCTION_RESULTS.get(d.p.name.toLowerCase());
+    const e = estimateStrength(d.p.role, { matches: d.s ? d.s.matches : 0, priceCr: price ? price.price / 100 : null, perf: performanceSignal(d.p.role, d.s, table) }, rolePrior);
+    Object.assign(x, { strength: e.strength, kind: 'estimated', breakdown: e.breakdown, note: e.note, estimated: true });
+    estimated++;
+  }
+  console.log('estimated players:', estimated);
   const rated = Object.values(players).filter((x) => x.rated).length;
+  console.log(`strength for every player: ${Object.values(players).filter((x) => typeof x.strength === 'number').length} of ${squads.length} (${rated} from stats, ${estimated} estimated)`);
   const doc = {
     source: { name: 'Cricsheet.org ball-by-ball IPL data', url: ZIP_URL, license: 'Open Data Commons Attribution License (ODC-By)', licenseUrl: 'https://opendatacommons.org/licenses/by/1-0/', matches, seasons: [seasons[0], seasons[seasons.length - 1]], generatedAt: new Date().toISOString() },
     method: METHOD, thresholds: STAT_THRESHOLDS, players,

@@ -310,3 +310,11 @@ b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbb
 .team-strength .ts-val { font: 800 24px Rajdhani, sans-serif; line-height: 1.1; }
 .ts-val.elite { color: #34d399; } .ts-val.high { color: #60a5fa; } .ts-val.mid { color: #fbbf24; } .ts-val.low { color: #f87171; } .ts-val.none { color: #64748b; }
 .rows.tight .sbadge { min-width: 32px; height: 32px; font-size: 13px; border-width: 2px; }
+
+/* Estimated strength: dashed ring + "est." label */
+.sb-wrap { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; flex: none; }
+.sbadge.est { border-style: dashed; }
+.est-tag { font: 700 9px Inter, sans-serif; font-style: normal; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); line-height: 1; }
+.est-note { background: #1b1a3a; border: 1px solid #3a3566; border-radius: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.5; color: #d6d2ff; margin-bottom: 8px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 14px; margin: 0 0 8px; }
+.facts > div { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #141c40; } .facts dt { color: var(--muted); } .facts dd { margin: 0; font-weight: 600; text-align: right; }

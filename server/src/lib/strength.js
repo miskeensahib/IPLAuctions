@@ -18,6 +18,34 @@ const STAT_THRESHOLDS = {
   fullConfidenceMatches: 30,
 };
 
+// Players with no usable IPL stats get an ESTIMATED strength (always labelled as an estimate, and capped below the
+// established stars): the typical score of newer players in the same role + small bonuses for known information.
+const EST = {
+  min: 35, max: 66,               // an estimate can never rank a rookie above a proven star
+  priceBonusPerLn: 2.2, priceBonusCap: 9, priceFloorCr: 0.3,   // franchise spend at the 2026 auction = scouting signal
+  perMatchBonus: 0.4, matchBonusCap: 4,                         // a few IPL matches already count for something
+  perfCap: 5, perfFullBalls: 90,  // what a short record actually showed can move the estimate by at most +/-5 (full weight at 90+ balls)
+};
+
+// Small-sample performance signal for estimates: percentile (0-100) of whatever the player has done so far, or null if nothing.
+// Batting uses strike rate + runs per dismissal (or per innings when not yet out); bowling uses economy + wicket rate. No minimum sample is required, the caller scales the effect by how much was seen.
+function performanceSignal(role, s, table) {
+  if (!s || !ROLE_W[role]) return null;
+  const parts = [], balls = { bat: 0, bowl: 0 };
+  if (s.bat && s.bat.balls >= 12 && ROLE_W[role].bat) {
+    const sr = pct((s.bat.runs * 100) / s.bat.balls, table.bat.strikeRate, false);
+    const avg = pct(s.bat.runs / Math.max(1, s.bat.outs), table.bat.average, false);
+    parts.push([(sr + avg) / 2, ROLE_W[role].bat]); balls.bat = s.bat.balls;
+  }
+  if (s.bowl && s.bowl.balls >= 12 && ROLE_W[role].bowl) {
+    const eco = pct((s.bowl.runs * 6) / s.bowl.balls, table.bowl.economy, true);
+    const rate = s.bowl.wkts ? pct(s.bowl.balls / s.bowl.wkts, table.bowl.strikeRate, true) : eco;
+    parts.push([(eco + rate) / 2, ROLE_W[role].bowl]); balls.bowl = s.bowl.balls;
+  }
+  const signal = wavg(parts);
+  return signal === null ? null : { signal, balls: balls.bat + balls.bowl };
+}
+
 const BAT_W = { average: 22, strikeRate: 22, runs: 22, milestones: 17, boundaries: 17 };
 const BOWL_W = { wickets: 25, economy: 25, average: 20, strikeRate: 15, best: 15 };
 const ROLE_W = {
@@ -28,6 +56,10 @@ const ROLE_W = {
 };
 
 const METHOD = [
+  'Two kinds of score exist, and every score on screen says which it is:',
+  'STATS: built from real IPL career statistics (below) for players with enough IPL batting or bowling data.',
+  `ESTIMATED ("est."): for players with no usable IPL record (new, uncapped or very few matches). Starting point = the median strength of newer (30 matches or fewer), stats-rated players of the same role, blended halfway with the overall median so no role is unfairly penalised. Bonus up to +${EST.priceBonusCap} for the price the franchise paid at the 2026 auction (+${EST.priceBonusPerLn} per natural-log step above \u20B9${EST.priceFloorCr} Cr), +${EST.perMatchBonus} per IPL match played (max +${EST.matchBonusCap}), and up to ±${EST.perfCap} for how the little he has played compares with other IPL players (strike rate / runs for batting, economy / wickets for bowling; full weight only from ${EST.perfFullBalls} balls). Always kept between ${EST.min} and ${EST.max}.`,
+  'Team strength = the average of all its purchased players\u2019 scores (stats and estimates together).',
   'Every figure is computed from IPL ball-by-ball data (Cricsheet.org, 2008 to the latest season).',
   `Batting (qualifies with ${STAT_THRESHOLDS.battingMinBalls}+ balls faced): batting average ${BAT_W.average}%, strike rate ${BAT_W.strikeRate}%, total runs ${BAT_W.runs}%, milestones (100s count double 50s) ${BAT_W.milestones}%, boundaries (fours + 1.5 x sixes) ${BAT_W.boundaries}%.`,
   `Bowling (qualifies with ${STAT_THRESHOLDS.bowlingMinBalls}+ balls bowled): wickets ${BOWL_W.wickets}%, economy ${BOWL_W.economy}%, bowling average ${BOWL_W.average}%, bowling strike rate ${BOWL_W.strikeRate}%, best figures ${BOWL_W.best}%.`,
@@ -99,10 +131,29 @@ function strengthFor(role, s, table) {
   const confidence = Math.min(1, s.matches / STAT_THRESHOLDS.fullConfidenceMatches);
   const strength = r1(Math.max(0, Math.min(100, 50 + (raw - 50) * confidence)));
   return {
-    strength,
+    strength, kind: 'stats',
     breakdown: { batting: batScore === null ? null : r1(batScore), bowling: bowlScore === null ? null : r1(bowlScore), fielding: fieldScore === null ? null : r1(fieldScore), weights, confidence: r1(confidence * 100) / 100 },
     note: confidence < 1 ? `Short IPL record (${s.matches} matches): score is pulled toward 50` : null,
   };
 }
 
-module.exports = { STAT_THRESHOLDS, METHOD, BAT_W, BOWL_W, ROLE_W, percentileTable, strengthFor, LOWER_IS_BETTER };
+// estimate for a player without usable stats. rolePrior = { Batter: n, ... , all: n } built from stats-rated players.
+function estimateStrength(role, { matches = 0, priceCr = null, perf = null }, rolePrior) {
+  const prior = rolePrior[role] ?? rolePrior.all;
+  const priceBonus = priceCr && priceCr > EST.priceFloorCr ? Math.min(EST.priceBonusCap, EST.priceBonusPerLn * Math.log(priceCr / EST.priceFloorCr)) : 0;
+  const expBonus = Math.min(EST.matchBonusCap, matches * EST.perMatchBonus);
+  // performance so far: scaled by how much was seen, and capped, so a 10-ball cameo cannot make or break a rating
+  const perfAdj = perf ? ((perf.signal - 50) / 50) * EST.perfCap * Math.min(1, perf.balls / EST.perfFullBalls) : 0;
+  const strength = r1(Math.max(EST.min, Math.min(EST.max, prior + priceBonus + expBonus + perfAdj)));
+  const parts = [`typical ${role.toLowerCase()} newcomer ${r1(prior)}`];
+  if (priceBonus) parts.push(`+${r1(priceBonus)} for the \u20B9${priceCr} Cr 2026 auction price`);
+  if (Math.abs(perfAdj) >= 0.05) parts.push(`${perfAdj > 0 ? '+' : '-'}${r1(Math.abs(perfAdj))} for how he has played so far`);
+  if (expBonus) parts.push(`+${r1(expBonus)} for ${matches} IPL match${matches === 1 ? '' : 'es'}`);
+  return {
+    strength, kind: 'estimated',
+    breakdown: { estimate: { rolePrior: r1(prior), priceBonus: r1(priceBonus), experienceBonus: r1(expBonus), performance: r1(perfAdj), min: EST.min, max: EST.max } },
+    note: `Estimated (${matches ? 'very short IPL record' : 'no IPL record'}): ${parts.join(' ')}`,
+  };
+}
+
+module.exports = { EST, estimateStrength, performanceSignal, STAT_THRESHOLDS, METHOD, BAT_W, BOWL_W, ROLE_W, percentileTable, strengthFor, LOWER_IS_BETTER };

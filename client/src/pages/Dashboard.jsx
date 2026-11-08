@@ -131,7 +131,7 @@ export function CurrentPlayer({ compact }) {
         <Timer />
         {bannerKey && (
           <div className={`result-banner ${bannerKey}`}>
-            {bannerKey === 'sold' ? <>SOLD to {live.lastResult.teamName} for {cr(live.lastResult.price)}{(() => { const sp = strength?.players.find((x) => x.id === p._id); return sp ? (sp.rated ? <> · Strength <b>{Math.round(sp.strength)}</b>/100</> : <> · Strength unrated</>) : null; })()}</> : <>UNSOLD</>}
+            {bannerKey === 'sold' ? <>SOLD to {live.lastResult.teamName} for {cr(live.lastResult.price)}{(() => { const sp = strength?.players.find((x) => x.id === p._id); return sp && sp.strength != null ? <> · Strength <b>{Math.round(sp.strength)}</b>/100{sp.kind === "estimated" ? " (est.)" : ""}</> : null; })()}</> : <>UNSOLD</>}
             {p.soldTo && <small>Real IPL 2026 result: {cr(p.soldPrice)} → {p.soldTo}</small>}
           </div>
         )}
@@ -283,7 +283,7 @@ export function TeamPanel({ team }) {
       <div className="team-strength" aria-label="Overall team strength">
         <div><span className="lbl">TEAM STRENGTH</span><b className={`ts-val ${tier(mine?.avg)}`}>{mine?.avg == null ? '—' : mine.avg.toFixed(1)}<small>/100</small></b></div>
         <div><span className="lbl">RANK</span><b>{mine?.rank ? `#${mine.rank}` : '—'}<small> of {strength?.teams.length ?? auction.teams.length}</small></b></div>
-        <div><span className="lbl">PLAYERS RATED</span><b>{mine?.rated ?? 0}<small> of {mine?.count ?? 0}</small></b></div>
+        <div><span className="lbl">FROM IPL STATS</span><b>{mine?.rated ?? 0}<small> of {mine?.count ?? 0}{mine?.estimated ? ` · ${mine.estimated} est.` : ""}</small></b></div>
       </div>
       <h4 className="sub">SQUAD OVERVIEW</h4>
       <div className="roles4">
@@ -292,7 +292,7 @@ export function TeamPanel({ team }) {
       <h4 className="sub">RECENT BUYS</h4>
       {!sq.length ? <Empty>No players bought yet.</Empty> : (
         <ul className="rows tight">
-          {[...sq].reverse().slice(0, 4).map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={32} /><span className="grow">{x.player.name}</span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} /><b className="blue">{cr(x.price)}</b></li>)}
+          {[...sq].reverse().slice(0, 4).map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={32} /><span className="grow">{x.player.name}</span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} kind={byId.get(x.player._id)?.kind} /><b className="blue">{cr(x.price)}</b></li>)}
         </ul>
       )}
       <Link className="btn ghost sm block" to={`/a/${code}/squad`}>View Full Squad</Link>

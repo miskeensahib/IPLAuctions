@@ -242,7 +242,13 @@ async function newAuction(mode, settings, claim = 'MI') {
   const pl = async (n) => PlayerM.findOne({ name: n }).lean();
   const [kohli, patidar, bumrah, rohit, duckett, dhoni] = await Promise.all(['Virat Kohli', 'Rajat Patidar', 'Jasprit Bumrah', 'Rohit Sharma', 'Ben Duckett', 'Mahendra Singh Dhoni'].map(pl));
   assert(kohli.strength > 0 && bumrah.strength > 0 && rohit.strength > 0 && patidar.strength > 0, 'stats were loaded into the database');
-  assert.strictEqual(duckett.strength, null, 'a player with no IPL record is unrated, not given a made-up score');
+  assert(duckett.strengthKind === 'estimated' && duckett.strength >= 35 && duckett.strength <= 66, 'a player with no IPL record gets a clearly-labelled ESTIMATE (kept within 35-66), not a stats score');
+  assert.strictEqual(await PlayerM.countDocuments({ $or: [{ strength: null }, { strength: { $exists: false } }] }), 0, 'every player in the database has a strength score');
+  const kinds = await PlayerM.aggregate([{ $group: { _id: '$strengthKind', n: { $sum: 1 } } }]);
+  assert.deepStrictEqual(kinds.map((k) => k._id).sort(), ['estimated', 'stats'], 'every score is either stats-based or labelled estimated');
+  assert((await PlayerM.find({ strengthKind: 'estimated' }).lean()).every((p) => p.strength >= 35 && p.strength <= 66), 'estimates never leave their 35-66 band');
+  assert(!(await PlayerM.exists({ slug: 'mohammed-shami' })) && (await PlayerM.findOne({ slug: 'mohammad-shami' }))?.strengthKind === 'stats', 'Shami follows the official spelling and keeps his real stats');
+  assert(kohli.battingStyle === 'Right Handed' && kohli.born && kohli.iplDebut === 2008, 'official profile facts (born, batting style, IPL debut) are stored');
   const sell = (p, short, price) => ResultM.create({ auction: sxDoc._id, player: p._id, teamShort: short, status: 'sold', price, basePrice: 30, bidCount: 3 });
   await sell(kohli, 'RCB', 200); await sell(patidar, 'RCB', 150); await sell(bumrah, 'MI', 300); await sell(rohit, 'MI', 250); await sell(duckett, 'DC', 100);
   await ResultM.create({ auction: sxDoc._id, player: dhoni._id, status: 'unsold', price: 0, basePrice: 30, bidCount: 0 });
@@ -253,12 +259,15 @@ async function newAuction(mode, settings, claim = 'MI') {
   const r1 = (x) => Math.round(x * 10) / 10;
   assert.strictEqual(tm('RCB').avg, r1((kohli.strength + patidar.strength) / 2), 'RCB average = mean of its purchased players');
   assert.strictEqual(tm('MI').avg, r1((bumrah.strength + rohit.strength) / 2), 'MI average = mean of its purchased players');
-  assert.deepStrictEqual([tm('DC').count, tm('DC').rated, tm('DC').avg, tm('DC').rank], [1, 0, null, null], 'unrated purchase counts as bought but not in the average, team unranked');
+  assert.deepStrictEqual([tm('DC').count, tm('DC').rated, tm('DC').estimated, tm('DC').avg], [1, 0, 1, duckett.strength], 'an estimated player counts in the team average (and is flagged as estimated)');
+  assert(Number.isInteger(tm('DC').rank), 'a team whose only purchase is an estimate is still ranked');
   assert.strictEqual(tm('CSK').count, 0); assert.strictEqual(tm('CSK').avg, null, 'a team that bought nobody has no strength');
   const hi = tm('RCB').avg > tm('MI').avg ? 'RCB' : 'MI';
   assert.strictEqual(tm(hi).rank, 1, 'highest average is rank 1'); assert.strictEqual(sg.teams[0].short, hi, 'teams are listed best first');
   assert(sg.players.find((x) => x.name === 'Virat Kohli').stats.batting.runs > 8000, 'real career stats come through');
   assert.strictEqual(sg.players.find((x) => x.name === 'Ben Duckett').rated, false);
+  assert.strictEqual(sg.players.find((x) => x.name === 'Ben Duckett').kind, 'estimated');
+  assert(sg.players.find((x) => x.name === 'Virat Kohli').profile.battingStyle, 'profile facts reach the screen');
   // another sale changes the average and can change the ranking
   const jadeja = await pl('Ravindra Jadeja'); await sell(jadeja, 'MI', 400);
   sg = (await call('GET', `/api/auctions/${SX.code}/strength`)).body;
@@ -266,7 +275,8 @@ async function newAuction(mode, settings, claim = 'MI') {
   assert.strictEqual(tm('MI').count, 3);
   // public player APIs never leak strength / stats
   const leak = (await call('GET', '/api/players?q=Kohli')).body.items[0];
-  assert(leak && !('strength' in leak) && !('iplStats' in leak) && !('strengthBreakdown' in leak), 'GET /api/players hides strength');
+  assert(leak && !('strength' in leak) && !('strengthKind' in leak) && !('iplStats' in leak) && !('strengthBreakdown' in leak), 'GET /api/players hides strength');
+  assert(leak.battingStyle && leak.born, 'but the public player record shows the official profile facts');
   const one = (await call('GET', `/api/players/${kohli._id}`)).body;
   assert(!('strength' in one) && !('iplStats' in one), 'GET /api/players/:id hides strength');
   assert.strictEqual((await call('GET', '/api/auctions/NOPE00/strength')).status, 404);

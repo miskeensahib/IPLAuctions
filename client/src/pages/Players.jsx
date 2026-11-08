@@ -25,6 +25,10 @@ function Detail({ p, onClose, wl, inAuction, result }) {
           <div><dt>Base price</dt><dd>{p.basePrice ? cr(p.basePrice) : 'Estimated at auction time'}</dd></div>
           <div><dt>IPL team</dt><dd>{p.team || '—'}</dd></div>
           {inAuction && <div><dt>Auction status</dt><dd>{result?.status === 'sold' ? `Sold to ${result.teamShort} for ${cr(result.price)}` : result?.status === 'unsold' ? 'Unsold' : 'Not auctioned yet'}</dd></div>}
+          {p.born && <div><dt>Born</dt><dd>{p.born}</dd></div>}
+          {p.battingStyle && <div><dt>Batting style</dt><dd>{p.battingStyle}</dd></div>}
+          {p.bowlingStyle && <div><dt>Bowling style</dt><dd>{p.bowlingStyle}</dd></div>}
+          {p.iplDebut && <div><dt>IPL debut</dt><dd>{p.iplDebut}</dd></div>}
           <div><dt>Previous team</dt><dd>{p.previousTeam || 'Not available'}</dd></div>
           <div><dt>Career stats</dt><dd>{p.stats && Object.keys(p.stats).length ? Object.entries(p.stats).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Not available'}</dd></div>
         </dl>

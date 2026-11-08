@@ -14,7 +14,10 @@ const playerSchema = new Schema({
   externalId: { type: Number, default: null },
   seedVersion: { type: Number, default: 0 },
   // Real IPL career stats (Cricsheet) and the Strength score computed from them. Only ever shown for players SOLD in an auction.
+  born: { type: String, default: null }, battingStyle: { type: String, default: null }, bowlingStyle: { type: String, default: null }, // official profile facts (iplt20.com)
+  iplDebut: { type: Number, default: null }, jersey: { type: String, default: null },
   iplStats: { type: Schema.Types.Mixed, default: null },
+  strengthKind: { type: String, enum: ['stats', 'estimated', null], default: null }, // 'stats' = from real IPL statistics, 'estimated' = role/price based
   strength: { type: Number, default: null },
   strengthBreakdown: { type: Schema.Types.Mixed, default: null },
   strengthNote: { type: String, default: null },

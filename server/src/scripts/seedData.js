@@ -5,7 +5,7 @@
 // NOT available from either source (so NOT official here): base prices, previous teams, career stats, unsold list.
 //    Base price is ESTIMATED at auction time and flagged basePriceVerified:false.
 const SOURCE = 'https://www.ipl.com/cricket/news/ipl-2026-auction-complete-list-of-players-bought-and-prices/';
-const SEED_VERSION = 2;
+const SEED_VERSION = 3; // 3: official profile facts added; "Mohammed" -> "Mohammad" Shami as on iplt20.com
 
 const TEAMS = [
   { short: 'CSK', name: 'Chennai Super Kings', color: '#f7b500', accent: '#1b1b1b' },
@@ -119,6 +119,7 @@ const PLAYERS = squads.map((p) => {
   return {
     name: p.name, slug: slugify(p.name), country: p.country, isOverseas: p.isOverseas, role: p.role, team: p.team,
     image: p.image, imageThumb: p.imageThumb, externalId: p.externalId, profileVerified: true,
+    born: p.born || null, battingStyle: p.battingStyle || null, bowlingStyle: p.bowlingStyle || null, iplDebut: p.iplDebut || null, jersey: p.jersey || null,
     marqueeRank: rank.get(p.name.toLowerCase()) || null,
     auctionStatus: r ? 'sold' : 'none', soldTo: r ? r.team : null, soldPrice: r ? r.price : null,
     source: p.source, seedVersion: SEED_VERSION,
@@ -127,4 +128,7 @@ const PLAYERS = squads.map((p) => {
 // Old (v1) records that used the results-page spelling; replaced by the squad spelling above.
 const LEGACY_SLUGS = Object.keys(ALIAS).map(slugify);
 
-module.exports = { TEAMS, PRESETS, PLAYERS, slugify, SEED_VERSION, LEGACY_SLUGS, results, MARQUEE };
+// Players whose name the official site changed: keep the same database record (and all auction history), just rename it.
+const RENAMES = { 'mohammed-shami': 'Mohammad Shami' };
+
+module.exports = { RENAMES, TEAMS, PRESETS, PLAYERS, slugify, SEED_VERSION, LEGACY_SLUGS, results, MARQUEE };

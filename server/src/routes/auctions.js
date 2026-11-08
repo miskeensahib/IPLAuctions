@@ -93,21 +93,22 @@ router.get('/:code/strength', wrap(async (req, res) => {
   const a = await Auction.findOne({ code: up(req.params.code) }).select('teams.team teams.short teams.name teams.color').lean();
   if (!a) throw new HttpError(404, 'Auction not found');
   const results = await AuctionResult.find({ auction: a._id, status: 'sold' }).sort({ createdAt: 1 }).lean();
-  const docs = await Player.find({ _id: { $in: results.map((r) => r.player) } }).select('name role country isOverseas imageThumb team iplStats strength strengthBreakdown strengthNote').lean();
+  const docs = await Player.find({ _id: { $in: results.map((r) => r.player) } }).select('name role country isOverseas imageThumb team iplStats strength strengthKind strengthBreakdown strengthNote born battingStyle bowlingStyle iplDebut jersey').lean();
   const byId = new Map(docs.map((p) => [String(p._id), p]));
   const players = results.map((r, i) => {
     const p = byId.get(String(r.player)); if (!p) return null;
     return { id: String(p._id), order: i + 1, name: p.name, role: p.role, country: p.country, isOverseas: p.isOverseas, imageThumb: p.imageThumb, iplTeam: p.team,
-      team: r.teamShort, price: r.price, soldAt: r.createdAt, strength: p.strength ?? null, rated: p.strength != null, breakdown: p.strengthBreakdown ?? null, note: p.strengthNote ?? null, stats: p.iplStats ?? null };
+      team: r.teamShort, price: r.price, soldAt: r.createdAt, strength: p.strength ?? null, kind: p.strengthKind ?? null, rated: p.strengthKind === 'stats', breakdown: p.strengthBreakdown ?? null, note: p.strengthNote ?? null, stats: p.iplStats ?? null,
+      profile: { born: p.born ?? null, battingStyle: p.battingStyle ?? null, bowlingStyle: p.bowlingStyle ?? null, iplDebut: p.iplDebut ?? null, jersey: p.jersey ?? null } };
   }).filter(Boolean);
   const teams = a.teams.map((t) => {
-    const mine = players.filter((p) => p.team === t.short), rated = mine.filter((p) => p.rated);
-    const best = rated.reduce((m, p) => (!m || p.strength > m.strength ? p : m), null);
-    return { short: t.short, name: t.name, color: t.color, count: mine.length, rated: rated.length,
-      avg: rated.length ? r1(rated.reduce((n, p) => n + p.strength, 0) / rated.length) : null, best: best ? { name: best.name, strength: best.strength } : null, rank: null };
+    const mine = players.filter((p) => p.team === t.short), scored = mine.filter((p) => p.strength !== null);
+    const best = scored.reduce((m, p) => (!m || p.strength > m.strength ? p : m), null);
+    return { short: t.short, name: t.name, color: t.color, count: mine.length, rated: mine.filter((p) => p.rated).length, estimated: mine.filter((p) => p.kind === 'estimated').length,
+      avg: scored.length ? r1(scored.reduce((n, p) => n + p.strength, 0) / scored.length) : null, best: best ? { name: best.name, strength: best.strength } : null, rank: null };
   });
   // rank 1 = highest average; equal averages share a rank; teams with no rated player yet are unranked
-  const ranked = teams.filter((t) => t.avg !== null).sort((x, y) => y.avg - x.avg || y.rated - x.rated || x.name.localeCompare(y.name));
+  const ranked = teams.filter((t) => t.avg !== null).sort((x, y) => y.avg - x.avg || y.count - x.count || x.name.localeCompare(y.name));
   let rank = 0, prev = null;
   ranked.forEach((t, i) => { if (t.avg !== prev) rank = i + 1; t.rank = rank; prev = t.avg; });
   teams.sort((x, y) => (x.rank ?? 99) - (y.rank ?? 99) || x.name.localeCompare(y.name));

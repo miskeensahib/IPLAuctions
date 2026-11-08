@@ -4,9 +4,9 @@ const { connectDb } = require('../config/db');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const AuctionSetting = require('../models/AuctionSetting');
-const { TEAMS, PRESETS, PLAYERS, SEED_VERSION, LEGACY_SLUGS } = require('./seedData');
+const { TEAMS, PRESETS, PLAYERS, SEED_VERSION, LEGACY_SLUGS, RENAMES, slugify } = require('./seedData');
 
-const STATS_VERSION = 1; // bump after re-running buildStats.js
+const STATS_VERSION = 3; // bump after re-running buildStats.js
 let STATS = null;
 try { STATS = require('./playerStats.json'); } catch { /* run `npm run build-stats` to create it */ }
 
@@ -18,9 +18,10 @@ async function seedStats() {
     filter: { slug, statsVersion: { $ne: STATS_VERSION } },
     update: { $set: {
       iplStats: x.matched ? x.stats : null,
-      strength: x.rated ? x.strength : null,
-      strengthBreakdown: x.rated ? x.breakdown : null,
-      strengthNote: x.rated ? (x.note || null) : (x.matched ? x.note : 'No IPL record found'),
+      strength: typeof x.strength === 'number' ? x.strength : null,
+      strengthKind: x.kind || null,
+      strengthBreakdown: x.breakdown || null,
+      strengthNote: x.note || null,
       statsMatchName: x.cricsheetName || null,
       statsVersion: STATS_VERSION,
     } },
@@ -50,6 +51,9 @@ async function seedAll() {
     await AuctionSetting.updateOne({ key: p.key, version: { $ne: SEED_VERSION } }, { $set: { ...p, version: SEED_VERSION } }, { upsert: true }).catch(ignoreDup);
   }
   const legacy = await Player.deleteMany({ slug: { $in: LEGACY_SLUGS }, seedVersion: { $lt: SEED_VERSION } });
+  for (const [oldSlug, newName] of Object.entries(RENAMES)) { // same database record, new official spelling
+    if (!(await Player.exists({ slug: slugify(newName) })) && await Player.exists({ slug: oldSlug })) await Player.updateOne({ slug: oldSlug }, { $set: { name: newName, slug: slugify(newName) } });
+  }
   const ops = PLAYERS.map((p) => ({ updateOne: { filter: { slug: p.slug, seedVersion: { $ne: SEED_VERSION } }, update: { $set: p }, upsert: true } }));
   const r = await Player.bulkWrite(ops, { ordered: false }).catch(ignoreDup);
   const statsUpdated = await seedStats();

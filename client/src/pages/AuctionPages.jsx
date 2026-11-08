@@ -68,13 +68,13 @@ export function Squad() {
       <section className="panel">
         <div className="lobby-head"><h3 className="panel-title">SQUAD</h3>
           <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>
-        {selStrength && <p className="sq-avg">Average strength <b className={`sv ${selStrength.avg == null ? 'none' : ''}`}>{selStrength.avg == null ? '—' : selStrength.avg.toFixed(1)}</b> · Rank <b>{selStrength.rank ? `#${selStrength.rank}` : '—'}</b> <small className="muted">({selStrength.rated} of {selStrength.count} bought players rated)</small></p>}
+        {selStrength && <p className="sq-avg">Average strength <b className={`sv ${selStrength.avg == null ? 'none' : ''}`}>{selStrength.avg == null ? '—' : selStrength.avg.toFixed(1)}</b> · Rank <b>{selStrength.rank ? `#${selStrength.rank}` : '—'}</b> <small className="muted">({selStrength.rated} of {selStrength.count} from IPL stats{selStrength.estimated ? `, ${selStrength.estimated} estimated` : ""})</small></p>}
         <div className="seg wrap">
           <button className={!role ? 'on' : ''} onClick={() => setRole('')}>All ({sq.length})</button>
           {ROLE_KEYS.map((r) => <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>{ROLE_SHORT[r]} ({rc[r]})</button>)}
         </div>
         {!shown.length ? <Empty>No players yet.</Empty> : (
-          <ul className="rows">{shown.map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={40} /><span className="grow"><b>{x.player.name}</b> <span className="code">{cc(x.player.country)}</span><br /><small className="muted">{x.player.role}</small></span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} /><b className="blue">{cr(x.price)}</b></li>)}</ul>
+          <ul className="rows">{shown.map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={40} /><span className="grow"><b>{x.player.name}</b> <span className="code">{cc(x.player.country)}</span><br /><small className="muted">{x.player.role}</small></span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} kind={byId.get(x.player._id)?.kind} /><b className="blue">{cr(x.price)}</b></li>)}</ul>
         )}
       </section>
 
