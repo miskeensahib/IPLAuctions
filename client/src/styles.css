@@ -303,3 +303,10 @@ b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbb
 }
 .rank-list { grid-template-columns: minmax(0, 1fr); } .rank-list > li { min-width: 0; }
 .pp-list > li { min-width: 0; }
+
+/* Team strength on the team card */
+.team-strength { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; margin-top: 12px; padding: 10px 6px; border: 1px solid var(--line); border-radius: 10px; background: #0a1131; }
+.team-strength b { display: block; font-size: 17px; margin-top: 2px; } .team-strength small { font-size: 11px; color: var(--muted); font-weight: 500; }
+.team-strength .ts-val { font: 800 24px Rajdhani, sans-serif; line-height: 1.1; }
+.ts-val.elite { color: #34d399; } .ts-val.high { color: #60a5fa; } .ts-val.mid { color: #fbbf24; } .ts-val.low { color: #f87171; } .ts-val.none { color: #64748b; }
+.rows.tight .sbadge { min-width: 32px; height: 32px; font-size: 13px; border-width: 2px; }

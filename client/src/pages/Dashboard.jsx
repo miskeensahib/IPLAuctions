@@ -4,6 +4,7 @@ import { api, fetchAllPlayers } from '../api';
 import { useAuction, useCountdown, useToast } from '../state';
 import { TeamStrip } from '../Layout';
 import { Avatar, Donut, Empty, SoundToggle, TeamBadge, VerifyTag } from '../ui';
+import { StrengthBadge, tier, useStrength } from '../strength';
 import { useCountdownWarning } from '../sound';
 import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, minBid, roleCounts } from '../utils';
 import Lobby from './Lobby';
@@ -52,6 +53,7 @@ export function CurrentPlayer({ compact }) {
   const [custom, setCustom] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const wl = useWatchlist();
+  const strength = useStrength(auction);
   const live = auction.live;
   const p = live?.player;
   const bidding = auction.status === 'live' && live?.phase === 'bidding';
@@ -129,7 +131,7 @@ export function CurrentPlayer({ compact }) {
         <Timer />
         {bannerKey && (
           <div className={`result-banner ${bannerKey}`}>
-            {bannerKey === 'sold' ? <>SOLD to {live.lastResult.teamName} for {cr(live.lastResult.price)}</> : <>UNSOLD</>}
+            {bannerKey === 'sold' ? <>SOLD to {live.lastResult.teamName} for {cr(live.lastResult.price)}{(() => { const sp = strength?.players.find((x) => x.id === p._id); return sp ? (sp.rated ? <> · Strength <b>{Math.round(sp.strength)}</b>/100</> : <> · Strength unrated</>) : null; })()}</> : <>UNSOLD</>}
             {p.soldTo && <small>Real IPL 2026 result: {cr(p.soldPrice)} → {p.soldTo}</small>}
           </div>
         )}
@@ -261,10 +263,13 @@ export function SquadRule({ team }) {
 export function TeamPanel({ team }) {
   const { auction, code } = useAuction();
   const squads = useSquads(auction);
+  const strength = useStrength(auction); // live: refreshed after every sale
   if (!team) return <section className="panel team-panel"><h3 className="panel-title">YOUR TEAM</h3><Empty>You are spectating. Pick a team in the lobby to bid.</Empty></section>;
   const sq = squads.find((s) => s.team.short === team.short)?.players || [];
   const rc = roleCounts(sq.map((x) => x.player));
   const pct = Math.min(100, (team.purse / auction.settings.purse) * 100);
+  const mine = strength?.teams.find((t) => t.short === team.short);
+  const byId = new Map((strength?.players || []).map((p) => [p.id, p]));
   return (
     <section className="panel team-panel">
       <div className="tp-head"><TeamBadge short={team.short} color={team.color} size={38} /><h3>{team.name.toUpperCase()}</h3></div>
@@ -275,6 +280,11 @@ export function TeamPanel({ team }) {
       </div>
       <div className="bar"><i style={{ width: `${pct}%` }} /></div>
       <SquadRule team={team} />
+      <div className="team-strength" aria-label="Overall team strength">
+        <div><span className="lbl">TEAM STRENGTH</span><b className={`ts-val ${tier(mine?.avg)}`}>{mine?.avg == null ? '—' : mine.avg.toFixed(1)}<small>/100</small></b></div>
+        <div><span className="lbl">RANK</span><b>{mine?.rank ? `#${mine.rank}` : '—'}<small> of {strength?.teams.length ?? auction.teams.length}</small></b></div>
+        <div><span className="lbl">PLAYERS RATED</span><b>{mine?.rated ?? 0}<small> of {mine?.count ?? 0}</small></b></div>
+      </div>
       <h4 className="sub">SQUAD OVERVIEW</h4>
       <div className="roles4">
         {ROLE_KEYS.map((r) => <div key={r}><span className="lbl">{r === 'Wicketkeeper' ? 'WICKET KEEPERS' : r.toUpperCase() + 'S'}</span><span className="ring">{rc[r]}</span></div>)}
@@ -282,7 +292,7 @@ export function TeamPanel({ team }) {
       <h4 className="sub">RECENT BUYS</h4>
       {!sq.length ? <Empty>No players bought yet.</Empty> : (
         <ul className="rows tight">
-          {[...sq].reverse().slice(0, 4).map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={32} /><span className="grow">{x.player.name}</span><b className="blue">{cr(x.price)}</b></li>)}
+          {[...sq].reverse().slice(0, 4).map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={32} /><span className="grow">{x.player.name}</span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} /><b className="blue">{cr(x.price)}</b></li>)}
         </ul>
       )}
       <Link className="btn ghost sm block" to={`/a/${code}/squad`}>View Full Squad</Link>

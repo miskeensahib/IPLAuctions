@@ -5,13 +5,19 @@ import { cc, cr } from './utils';
 
 // Live player strength + team ranking. The data comes from GET /api/auctions/:code/strength, which only ever contains
 // players SOLD in this auction, and it is re-fetched after every sale so averages and ranks update by themselves.
+const inflight = new Map();
+const fetchStrength = (code, sold) => {
+  const key = `${code}:${sold}`;
+  if (!inflight.has(key)) inflight.set(key, api(`/auctions/${code}/strength`).finally(() => setTimeout(() => inflight.delete(key), 1500)));
+  return inflight.get(key);
+};
 export function useStrength(auction) {
   const [data, setData] = useState(null);
   const sold = auction ? auction.stats.sold : 0;
   useEffect(() => {
     if (!auction) return undefined;
     let alive = true;
-    api(`/auctions/${auction.code}/strength`).then((d) => alive && setData(d)).catch(() => {});
+    fetchStrength(auction.code, sold).then((d) => alive && setData(d)).catch(() => {});
     return () => { alive = false; };
   }, [auction?.code, sold]); // eslint-disable-line react-hooks/exhaustive-deps
   return data;
