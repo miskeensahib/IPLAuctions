@@ -318,3 +318,11 @@ b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbb
 .est-note { background: #1b1a3a; border: 1px solid #3a3566; border-radius: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.5; color: #d6d2ff; margin-bottom: 8px; }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 14px; margin: 0 0 8px; }
 .facts > div { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #141c40; } .facts dt { color: var(--muted); } .facts dd { margin: 0; font-weight: 600; text-align: right; }
+
+/* Save popup: choose Current View and/or Team & Player Strength */
+.save-pop .muted { margin: 4px 0 12px; }
+.save-opt { display: flex; gap: 12px; align-items: flex-start; padding: 12px; margin-bottom: 10px; border: 1px solid var(--line2); border-radius: 12px; cursor: pointer; background: #121838; }
+.save-opt.on { border-color: #3b82f6; background: #14214d; }
+.save-opt input { width: 20px; height: 20px; margin-top: 2px; accent-color: #3b82f6; flex: none; }
+.save-opt b { display: block; font-size: 15px; } .save-opt small { color: var(--muted); font-size: 12.5px; }
+.save-pop .row-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
