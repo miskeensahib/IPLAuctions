@@ -235,6 +235,43 @@ async function newAuction(mode, settings, claim = 'MI') {
   assert(engine.timerKinds(P.code).includes('close'), 'the close timer is re-armed after resume (the lot will end by itself)');
   await adm('DELETE', `/auctions/${P.code}`);
 
+  // --- player strength, team average, ranking ---
+  const PlayerM = require('../models/Player'), ResultM = require('../models/AuctionResult');
+  const SX = await newAuction('rapid', {}, 'MI');
+  const sxDoc = await AuctionModel.findOne({ code: SX.code }).select('_id').lean();
+  const pl = async (n) => PlayerM.findOne({ name: n }).lean();
+  const [kohli, patidar, bumrah, rohit, duckett, dhoni] = await Promise.all(['Virat Kohli', 'Rajat Patidar', 'Jasprit Bumrah', 'Rohit Sharma', 'Ben Duckett', 'Mahendra Singh Dhoni'].map(pl));
+  assert(kohli.strength > 0 && bumrah.strength > 0 && rohit.strength > 0 && patidar.strength > 0, 'stats were loaded into the database');
+  assert.strictEqual(duckett.strength, null, 'a player with no IPL record is unrated, not given a made-up score');
+  const sell = (p, short, price) => ResultM.create({ auction: sxDoc._id, player: p._id, teamShort: short, status: 'sold', price, basePrice: 30, bidCount: 3 });
+  await sell(kohli, 'RCB', 200); await sell(patidar, 'RCB', 150); await sell(bumrah, 'MI', 300); await sell(rohit, 'MI', 250); await sell(duckett, 'DC', 100);
+  await ResultM.create({ auction: sxDoc._id, player: dhoni._id, status: 'unsold', price: 0, basePrice: 30, bidCount: 0 });
+  let sg = (await call('GET', `/api/auctions/${SX.code}/strength`)).body;
+  assert.strictEqual(sg.players.length, 5, 'only SOLD players are listed');
+  assert(!sg.players.some((x) => x.name === 'Mahendra Singh Dhoni'), 'an unsold player has no strength shown');
+  const tm = (short) => sg.teams.find((t) => t.short === short);
+  const r1 = (x) => Math.round(x * 10) / 10;
+  assert.strictEqual(tm('RCB').avg, r1((kohli.strength + patidar.strength) / 2), 'RCB average = mean of its purchased players');
+  assert.strictEqual(tm('MI').avg, r1((bumrah.strength + rohit.strength) / 2), 'MI average = mean of its purchased players');
+  assert.deepStrictEqual([tm('DC').count, tm('DC').rated, tm('DC').avg, tm('DC').rank], [1, 0, null, null], 'unrated purchase counts as bought but not in the average, team unranked');
+  assert.strictEqual(tm('CSK').count, 0); assert.strictEqual(tm('CSK').avg, null, 'a team that bought nobody has no strength');
+  const hi = tm('RCB').avg > tm('MI').avg ? 'RCB' : 'MI';
+  assert.strictEqual(tm(hi).rank, 1, 'highest average is rank 1'); assert.strictEqual(sg.teams[0].short, hi, 'teams are listed best first');
+  assert(sg.players.find((x) => x.name === 'Virat Kohli').stats.batting.runs > 8000, 'real career stats come through');
+  assert.strictEqual(sg.players.find((x) => x.name === 'Ben Duckett').rated, false);
+  // another sale changes the average and can change the ranking
+  const jadeja = await pl('Ravindra Jadeja'); await sell(jadeja, 'MI', 400);
+  sg = (await call('GET', `/api/auctions/${SX.code}/strength`)).body;
+  assert.strictEqual(tm('MI').avg, r1((bumrah.strength + rohit.strength + jadeja.strength) / 3), 'average recalculated after another purchase');
+  assert.strictEqual(tm('MI').count, 3);
+  // public player APIs never leak strength / stats
+  const leak = (await call('GET', '/api/players?q=Kohli')).body.items[0];
+  assert(leak && !('strength' in leak) && !('iplStats' in leak) && !('strengthBreakdown' in leak), 'GET /api/players hides strength');
+  const one = (await call('GET', `/api/players/${kohli._id}`)).body;
+  assert(!('strength' in one) && !('iplStats' in one), 'GET /api/players/:id hides strength');
+  assert.strictEqual((await call('GET', '/api/auctions/NOPE00/strength')).status, 404);
+  await adm('DELETE', `/auctions/${SX.code}`);
+
   console.log('OK modes');
   process.exit(0);
 })().catch((e) => { console.error('FAIL', e); process.exit(1); });

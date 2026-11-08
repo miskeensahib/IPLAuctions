@@ -1,0 +1,17 @@
+{
+  "_comment": "Players whose Cricsheet name cannot be matched automatically (different spelling or extra initials). Values are Cricsheet identifiers, each checked by hand against the player's team and seasons. 'none' = players deliberately left unmatched.",
+  "match": {
+    "Varun Chakaravarthy": "5b7ab5a9",
+    "Dasun Shanaka": "3ff033bb",
+    "Kamindu Mendis": "08548b13",
+    "Nitish Kumar Reddy": "aad0c365",
+    "Wanindu Hasaranga": "a97c8ec2",
+    "Dushmantha Chameera": "327b58d3",
+    "Lhuan-dré Pretorius": "60aa2db3",
+    "Rasikh Dar": "b8527c3d",
+    "Vaibhav Sooryavanshi": "470f446b",
+    "Yarra Prithviraj": "cfa4bd2b",
+    "Yudhvir Singh Charak": "4885bbe6"
+  },
+  "none": []
+}

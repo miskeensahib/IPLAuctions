@@ -3,6 +3,8 @@ const Player = require('../models/Player');
 const { HttpError, wrap, requireAdmin } = require('../lib/http');
 const { slugify } = require('../scripts/seedData');
 
+// Strength and career stats are only released for players SOLD in an auction (GET /api/auctions/:code/strength).
+const HIDE = '-iplStats -strength -strengthBreakdown -strengthNote -statsMatchName -statsVersion';
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const FIELDS = ['name', 'country', 'role', 'team', 'imageThumb', 'marqueeRank', 'previousTeam', 'basePrice', 'basePriceVerified', 'auctionStatus', 'soldTo', 'soldPrice', 'profileVerified', 'image', 'source', 'notes', 'stats'];
 const pick = (body) => Object.fromEntries(FIELDS.filter((k) => body[k] !== undefined).map((k) => [k, body[k]]));
@@ -30,14 +32,14 @@ router.get('/', wrap(async (req, res) => {
   if (overseas === 'true' || overseas === 'false') f.isOverseas = overseas === 'true';
   const sortMap = { marquee: { marqueeRank: 1, name: 1 }, name: { name: 1 }, price: { soldPrice: -1 }, base: { basePrice: -1 } };
   const [items, total] = await Promise.all([
-    Player.find(f).sort(sortMap[sort] || sortMap.name).skip((page - 1) * limit).limit(limit).lean(),
+    Player.find(f).select(HIDE).sort(sortMap[sort] || sortMap.name).skip((page - 1) * limit).limit(limit).lean(),
     Player.countDocuments(f),
   ]);
   res.json({ items, total, page, pages: Math.ceil(total / limit) });
 }));
 
 router.get('/:id', wrap(async (req, res) => {
-  const p = await Player.findById(req.params.id).lean().catch(() => null);
+  const p = await Player.findById(req.params.id).select(HIDE).lean().catch(() => null);
   if (!p) throw new HttpError(404, 'Player not found');
   res.json(p);
 }));

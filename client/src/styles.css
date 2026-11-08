@@ -267,3 +267,39 @@ textarea { font-family: monospace; font-size: 12px; margin-bottom: 8px; }
 .center-msg.col { flex-direction: column; gap: 10px; }
 .spin-row { display: inline-flex; align-items: center; gap: 10px; }
 .slow-note { max-width: 420px; line-height: 1.5; }
+
+/* ---------- Player strength + team ranking (Squad page) ---------- */
+.sbadge { display: inline-grid; place-items: center; min-width: 40px; height: 40px; border-radius: 50%; font: 800 15px Inter, sans-serif; border: 3px solid; background: #0a1131; flex: none; }
+.sbadge.elite { color: #34d399; border-color: #34d399; } .sbadge.high { color: #60a5fa; border-color: #60a5fa; }
+.sbadge.mid { color: #fbbf24; border-color: #fbbf24; } .sbadge.low { color: #f87171; border-color: #f87171; }
+.sbadge.none { color: #64748b; border-color: #334155; border-style: dashed; }
+b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbbf24; } b.low { color: #f87171; } b.none, b.sv.none { color: #64748b; }
+.rank-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
+.rank-row { width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; background: #0a1131; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 52px; }
+.rank-row:hover { border-color: var(--line2); } .rank-row.on { border-color: var(--gold); background: #17194a; }
+.rank-no { width: 34px; font: 800 16px Rajdhani, sans-serif; color: var(--muted); flex: none; }
+.rank-no.r1 { color: #fbbf24; } .rank-no.r2 { color: #cbd5e1; } .rank-no.r3 { color: #d6a06a; }
+.rank-name { display: flex; flex-direction: column; min-width: 0; } .rank-name b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .rank-name small { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-avg { width: 92px; flex: none; text-align: right; } .rank-avg b { font: 800 20px Rajdhani, sans-serif; display: block; line-height: 1.1; }
+.rank-avg .bar { display: block; height: 5px; border-radius: 3px; margin-top: 4px; margin-left: auto; max-width: 100%; }
+.bar.elite { background: #34d399; } .bar.high { background: #60a5fa; } .bar.mid { background: #fbbf24; } .bar.low { background: #f87171; } .bar.none { background: #334155; }
+.sq-avg { margin: 0 0 10px; font-size: 13px; color: #c9cfee; } .sq-avg b { font-size: 15px; color: #fff; } .sq-avg b.sv { color: #34d399; }
+.pp-list { gap: 8px; } .rows li.pp { display: block; padding: 0; }
+.pp-main { width: 100%; display: flex; align-items: center; gap: 10px; background: transparent; border: 0; text-align: left; padding: 8px 10px; min-height: 60px; }
+.pp-name { display: flex; flex-direction: column; min-width: 0; } .pp-name b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline; }
+.pp-team { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; } .pp-team small { font-size: 10px; color: var(--muted); }
+.pp-price { text-align: right; display: flex; flex-direction: column; flex: none; font-size: 13px; } .pp-price small { font-size: 10px; }
+.pp-caret { color: var(--muted); width: 14px; flex: none; text-align: center; }
+.pp-detail { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
+.stat-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 8px; }
+.stat-groups h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: 1px; color: #d4dbff; } .stat-groups dl { margin: 0; }
+.stat-groups dl > div { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 3px 0; border-bottom: 1px solid #141c40; } .stat-groups dt { color: var(--muted); } .stat-groups dd { margin: 0; font-weight: 600; }
+.bk { display: grid; gap: 5px; margin: 6px 0 4px; } .bk > div { display: grid; grid-template-columns: 62px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.bk-bar { height: 6px; background: #141c40; border-radius: 3px; overflow: hidden; } .bk-bar i { display: block; height: 100%; } .bk-bar i.elite { background: #34d399; } .bk-bar i.high { background: #60a5fa; } .bk-bar i.mid { background: #fbbf24; } .bk-bar i.low { background: #f87171; } .bk b { color: #fff; text-align: right; }
+.how { margin-top: 12px; font-size: 13px; } .how summary { cursor: pointer; color: var(--blue2); } .how ul { margin: 8px 0; padding-left: 18px; color: #c9cfee; line-height: 1.5; }
+@media (max-width: 560px) {
+  .pp-main { flex-wrap: wrap; row-gap: 6px; } .pp-name { flex: 1 1 calc(100% - 120px); } .pp-team { order: 3; flex-direction: row; gap: 6px; } .pp-price { order: 4; margin-left: auto; text-align: left; } .pp-main .sbadge { order: 2; margin-left: auto; } .pp-caret { order: 5; }
+  .rank-avg { width: 64px; } .rank-name small { white-space: normal; }
+}
+.rank-list { grid-template-columns: minmax(0, 1fr); } .rank-list > li { min-width: 0; }
+.pp-list > li { min-width: 0; }

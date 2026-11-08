@@ -13,6 +13,13 @@ const playerSchema = new Schema({
   marqueeRank: { type: Number, default: null },                   // lower = earlier in a Mega auction
   externalId: { type: Number, default: null },
   seedVersion: { type: Number, default: 0 },
+  // Real IPL career stats (Cricsheet) and the Strength score computed from them. Only ever shown for players SOLD in an auction.
+  iplStats: { type: Schema.Types.Mixed, default: null },
+  strength: { type: Number, default: null },
+  strengthBreakdown: { type: Schema.Types.Mixed, default: null },
+  strengthNote: { type: String, default: null },
+  statsMatchName: { type: String, default: null },
+  statsVersion: { type: Number, default: 0 },
   basePrice: { type: Number, default: null, min: 0 },          // lakhs
   basePriceVerified: { type: Boolean, default: false },
   auctionStatus: { type: String, enum: ['upcoming', 'sold', 'unsold', 'none'], default: 'upcoming' },

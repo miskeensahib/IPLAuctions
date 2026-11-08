@@ -6,6 +6,29 @@ const Player = require('../models/Player');
 const AuctionSetting = require('../models/AuctionSetting');
 const { TEAMS, PRESETS, PLAYERS, SEED_VERSION, LEGACY_SLUGS } = require('./seedData');
 
+const STATS_VERSION = 1; // bump after re-running buildStats.js
+let STATS = null;
+try { STATS = require('./playerStats.json'); } catch { /* run `npm run build-stats` to create it */ }
+
+// Career stats + Strength per player (from playerStats.json). Written once per STATS_VERSION; players without any IPL
+// record get null ("unrated"), never an invented number.
+async function seedStats() {
+  if (!STATS) return 0;
+  const ops = Object.entries(STATS.players).map(([slug, x]) => ({ updateOne: {
+    filter: { slug, statsVersion: { $ne: STATS_VERSION } },
+    update: { $set: {
+      iplStats: x.matched ? x.stats : null,
+      strength: x.rated ? x.strength : null,
+      strengthBreakdown: x.rated ? x.breakdown : null,
+      strengthNote: x.rated ? (x.note || null) : (x.matched ? x.note : 'No IPL record found'),
+      statsMatchName: x.cricsheetName || null,
+      statsVersion: STATS_VERSION,
+    } },
+  } }));
+  const r = await Player.bulkWrite(ops, { ordered: false });
+  return r.modifiedCount;
+}
+
 // A duplicate-key error just means "already at this seed version", which is what we want to skip.
 const ignoreDup = (e) => { if (!(e.writeErrors || [e]).every((w) => (w.err?.code ?? w.code) === 11000)) throw e; return e.result; };
 
@@ -14,10 +37,12 @@ const ignoreDup = (e) => { if (!(e.writeErrors || [e]).every((w) => (w.err?.code
 async function seedAll() {
   // Fast path: everything is already at the current seed version, so there is nothing to write. This used to re-check
   // all 274 players on every start (about 2 s, which also delayed every wake-up of a sleeping server).
-  const [seeded, presets, teams] = await Promise.all([
+  const [seeded, presets, teams, withStats] = await Promise.all([
     Player.countDocuments({ seedVersion: SEED_VERSION }), AuctionSetting.countDocuments({ version: SEED_VERSION }), Team.countDocuments(),
+    Player.countDocuments({ statsVersion: STATS_VERSION }),
   ]);
-  if (seeded >= PLAYERS.length && presets >= PRESETS.length && teams >= TEAMS.length) {
+  const statsDone = !STATS || withStats >= Object.keys(STATS.players).length;
+  if (seeded >= PLAYERS.length && presets >= PRESETS.length && teams >= TEAMS.length && statsDone) {
     return { teams, presets, players: await Player.countDocuments(), updated: 0, legacyRemoved: 0, skipped: true };
   }
   await Promise.all(TEAMS.map((t) => Team.updateOne({ short: t.short }, { $set: t }, { upsert: true })));
@@ -27,7 +52,8 @@ async function seedAll() {
   const legacy = await Player.deleteMany({ slug: { $in: LEGACY_SLUGS }, seedVersion: { $lt: SEED_VERSION } });
   const ops = PLAYERS.map((p) => ({ updateOne: { filter: { slug: p.slug, seedVersion: { $ne: SEED_VERSION } }, update: { $set: p }, upsert: true } }));
   const r = await Player.bulkWrite(ops, { ordered: false }).catch(ignoreDup);
-  return { teams: TEAMS.length, presets: PRESETS.length, players: await Player.countDocuments(), updated: (r?.upsertedCount || 0) + (r?.modifiedCount || 0), legacyRemoved: legacy.deletedCount };
+  const statsUpdated = await seedStats();
+  return { teams: TEAMS.length, presets: PRESETS.length, players: await Player.countDocuments(), updated: (r?.upsertedCount || 0) + (r?.modifiedCount || 0), statsUpdated, legacyRemoved: legacy.deletedCount };
 }
 
 if (require.main === module) {

@@ -8,6 +8,7 @@ import { BidHistory, CurrentPlayer, TeamPanel, useResults, useSquads } from './D
 import Lobby from './Lobby';
 import SquadActions from '../SquadActions';
 import { groupSquad } from '../squadImage';
+import { PurchasedPlayers, StrengthBadge, TeamRanking, useStrength } from '../strength';
 
 export function Live() {
   const { auction, myTeam } = useAuction();
@@ -55,20 +56,29 @@ export function Squad() {
   const rc = roleCounts(sq.map((x) => x.player));
   const [role, setRole] = useState('');
   const shown = sq.filter((x) => !role || x.player.role === role);
+  // live strength of every player SOLD in this auction + each team's average and rank (updates after every sale)
+  const strength = useStrength(auction);
+  const byId = new Map((strength?.players || []).map((p) => [p.id, p]));
+  const selStrength = strength?.teams.find((t) => t.short === sel.short);
+  const labelOf = (s) => { const t = auction.teams.find((x) => x.short === s); return t ? teamLabel(t, { isHost, myTeamId }) : s; };
   return (
     <div className="stack">
       <TeamPanel team={sel} />
+      <TeamRanking data={strength} selected={sel.short} onSelect={setShort} labelOf={labelOf} />
       <section className="panel">
         <div className="lobby-head"><h3 className="panel-title">SQUAD</h3>
           <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>
+        {selStrength && <p className="sq-avg">Average strength <b className={`sv ${selStrength.avg == null ? 'none' : ''}`}>{selStrength.avg == null ? '—' : selStrength.avg.toFixed(1)}</b> · Rank <b>{selStrength.rank ? `#${selStrength.rank}` : '—'}</b> <small className="muted">({selStrength.rated} of {selStrength.count} bought players rated)</small></p>}
         <div className="seg wrap">
           <button className={!role ? 'on' : ''} onClick={() => setRole('')}>All ({sq.length})</button>
           {ROLE_KEYS.map((r) => <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>{ROLE_SHORT[r]} ({rc[r]})</button>)}
         </div>
         {!shown.length ? <Empty>No players yet.</Empty> : (
-          <ul className="rows">{shown.map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={40} /><span className="grow"><b>{x.player.name}</b> <span className="code">{cc(x.player.country)}</span><br /><small className="muted">{x.player.role}</small></span><b className="blue">{cr(x.price)}</b></li>)}</ul>
+          <ul className="rows">{shown.map((x) => <li key={x.player._id}><Avatar name={x.player.name} src={x.player.imageThumb} size={40} /><span className="grow"><b>{x.player.name}</b> <span className="code">{cc(x.player.country)}</span><br /><small className="muted">{x.player.role}</small></span><StrengthBadge value={byId.get(x.player._id)?.strength} note={byId.get(x.player._id)?.note} /><b className="blue">{cr(x.price)}</b></li>)}</ul>
         )}
       </section>
+
+      <PurchasedPlayers data={strength} teams={auction.teams} labelOf={labelOf} />
 
       <section className="panel squad-card" aria-label={`${sel.name} squad card`}>
         <h3 className="panel-title">SQUAD CARD · {sel.short}</h3>

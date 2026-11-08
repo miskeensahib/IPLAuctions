@@ -5,6 +5,7 @@ const AuctionResult = require('../models/AuctionResult');
 const Squad = require('../models/Squad');
 const Bid = require('../models/Bid');
 const Team = require('../models/Team');
+const Player = require('../models/Player');
 const engine = require('../engine/auctionEngine');
 const { HttpError, wrap, requireAdmin } = require('../lib/http');
 const { checkSettings } = require('../lib/limits');
@@ -83,6 +84,35 @@ const find = async (code) => {
   if (!a) throw new HttpError(404, 'Auction not found');
   return a;
 };
+// Player strengths, team averages and the ranking. Built ONLY from players SOLD in this auction (unsold / not yet bought
+// players never appear), so every sale changes it and the ranking updates itself.
+let STATS_DOC = null;
+try { STATS_DOC = require('../scripts/playerStats.json'); } catch { /* stats not built yet */ }
+const r1 = (x) => Math.round(x * 10) / 10;
+router.get('/:code/strength', wrap(async (req, res) => {
+  const a = await Auction.findOne({ code: up(req.params.code) }).select('teams.team teams.short teams.name teams.color').lean();
+  if (!a) throw new HttpError(404, 'Auction not found');
+  const results = await AuctionResult.find({ auction: a._id, status: 'sold' }).sort({ createdAt: 1 }).lean();
+  const docs = await Player.find({ _id: { $in: results.map((r) => r.player) } }).select('name role country isOverseas imageThumb team iplStats strength strengthBreakdown strengthNote').lean();
+  const byId = new Map(docs.map((p) => [String(p._id), p]));
+  const players = results.map((r, i) => {
+    const p = byId.get(String(r.player)); if (!p) return null;
+    return { id: String(p._id), order: i + 1, name: p.name, role: p.role, country: p.country, isOverseas: p.isOverseas, imageThumb: p.imageThumb, iplTeam: p.team,
+      team: r.teamShort, price: r.price, soldAt: r.createdAt, strength: p.strength ?? null, rated: p.strength != null, breakdown: p.strengthBreakdown ?? null, note: p.strengthNote ?? null, stats: p.iplStats ?? null };
+  }).filter(Boolean);
+  const teams = a.teams.map((t) => {
+    const mine = players.filter((p) => p.team === t.short), rated = mine.filter((p) => p.rated);
+    const best = rated.reduce((m, p) => (!m || p.strength > m.strength ? p : m), null);
+    return { short: t.short, name: t.name, color: t.color, count: mine.length, rated: rated.length,
+      avg: rated.length ? r1(rated.reduce((n, p) => n + p.strength, 0) / rated.length) : null, best: best ? { name: best.name, strength: best.strength } : null, rank: null };
+  });
+  // rank 1 = highest average; equal averages share a rank; teams with no rated player yet are unranked
+  const ranked = teams.filter((t) => t.avg !== null).sort((x, y) => y.avg - x.avg || y.rated - x.rated || x.name.localeCompare(y.name));
+  let rank = 0, prev = null;
+  ranked.forEach((t, i) => { if (t.avg !== prev) rank = i + 1; t.rank = rank; prev = t.avg; });
+  teams.sort((x, y) => (x.rank ?? 99) - (y.rank ?? 99) || x.name.localeCompare(y.name));
+  res.json({ teams, players, source: STATS_DOC?.source ?? null, method: STATS_DOC?.method ?? [] });
+}));
 router.get('/:code/results', wrap(async (req, res) => {
   const a = await find(req.params.code);
   const f = { auction: a._id };
