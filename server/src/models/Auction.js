@@ -16,6 +16,7 @@ module.exports = model('Auction', new Schema({
   play: { type: String, enum: ['solo', 'multi'], default: 'solo' },
   status: { type: String, enum: ['lobby', 'live', 'paused', 'completed'], default: 'lobby', index: true },
   hostId: String, hostName: String,
+  kicked: { type: [String], default: [] }, // browsers the host removed: they cannot take a team in this room again
   settings: { type: Schema.Types.Mixed, required: true },
   teams: [teamState],
   pool: [{ type: Schema.Types.ObjectId, ref: 'Player' }],

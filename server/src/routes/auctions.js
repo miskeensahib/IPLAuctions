@@ -47,9 +47,9 @@ router.post('/', wrap(async (req, res) => {
 router.get('/:code/me', wrap(async (req, res) => {
   const id = cid(req);
   await engine.tidyOwner(up(req.params.code), id); // a person holds at most one team
-  const a = await Auction.findOne({ code: up(req.params.code) }).select('hostId teams.team teams.ownerId').lean();
+  const a = await Auction.findOne({ code: up(req.params.code) }).select('hostId kicked teams.team teams.ownerId').lean();
   if (!a) throw new HttpError(404, 'Auction not found');
-  res.json({ isHost: a.hostId === id, teamId: a.teams.find((t) => t.ownerId === id)?.team || null });
+  res.json({ isHost: a.hostId === id, teamId: a.teams.find((t) => t.ownerId === id)?.team || null, kicked: (a.kicked || []).includes(id) });
 }));
 
 router.get('/:code', wrap(async (req, res) => res.json(await engine.view(up(req.params.code)))));
@@ -57,6 +57,10 @@ router.get('/:code', wrap(async (req, res) => res.json(await engine.view(up(req.
 router.post('/:code/claim', wrap(async (req, res) => {
   await engine.claimTeam(up(req.params.code), { teamId: req.body.teamId, clientId: cid(req), name: req.body.name });
   res.json(await engine.view(up(req.params.code)));
+}));
+router.post('/:code/kick', wrap(async (req, res) => {
+  const removed = await engine.kickTeams(up(req.params.code), cid(req), req.body?.teamIds);
+  res.json({ ok: true, removed });
 }));
 router.post('/:code/release', wrap(async (req, res) => {
   await engine.releaseTeam(up(req.params.code), { teamId: req.body.teamId, clientId: cid(req) });

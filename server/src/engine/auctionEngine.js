@@ -49,6 +49,7 @@ async function view(code) {
   return {
     ...a,
     hostId: undefined,
+    kicked: undefined,
     teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, claimed: !t.isBot, host: !t.isBot && ownerId === a.hostId })), // owner ids stay private; `host` only says whose team the host controls
     pool: undefined,
     poolTotal: a.pool.length,
@@ -133,6 +134,7 @@ async function claimTeam(code, { teamId, clientId, name }) {
   const a = await Auction.findOne({ code });
   if (!a) throw new HttpError(404, 'Auction not found');
   if (a.status === 'completed') throw new HttpError(409, 'Auction already finished');
+  if ((a.kicked || []).includes(clientId)) throw new HttpError(403, 'The host removed you from this room');
   const hasOther = a.teams.some((t) => t.ownerId === clientId && String(t.team) !== String(teamId));
   if (hasOther && a.status !== 'lobby') throw new HttpError(409, 'You already control a team in this auction');
   const res = await Auction.updateOne(
@@ -146,6 +148,26 @@ async function claimTeam(code, { teamId, clientId, name }) {
   // only after the new team is secured, so a failed claim never costs the person their current team
   const freed = hasOther ? await freeOtherTeams(a, clientId, teamId) : false;
   if (res.modifiedCount || freed) await broadcast(code);
+}
+
+// HOST ONLY: remove one or several users by their teams. Their teams go back to the bots (purse and players stay with the team)
+// and the people removed cannot take a team in this room again.
+async function kickTeams(code, clientId, teamIds) {
+  const a = await Auction.findOne({ code });
+  if (!a) throw new HttpError(404, 'Auction not found');
+  if (a.hostId !== clientId) throw new HttpError(403, 'Only the host can kick out users');
+  if (a.status === 'completed') throw new HttpError(409, 'Auction already finished');
+  const ids = [...new Set((Array.isArray(teamIds) ? teamIds : []).map(String))];
+  if (!ids.length) throw new HttpError(400, 'Select at least one team to kick out');
+  const targets = a.teams.filter((t) => ids.includes(String(t.team)));
+  if (targets.length !== ids.length) throw new HttpError(404, 'Team not found');
+  if (targets.some((t) => t.isBot || !t.ownerId)) throw new HttpError(409, 'That team has no user to kick out');
+  if (targets.some((t) => t.ownerId === a.hostId)) throw new HttpError(400, 'The host cannot kick out themselves');
+  const owners = targets.map((t) => t.ownerId), teams = targets.map((t) => t.team);
+  await Auction.updateOne({ _id: a._id }, { $addToSet: { kicked: { $each: owners } }, $set: { 'teams.$[t].isBot': true, 'teams.$[t].ownerId': null, 'teams.$[t].ownerName': null } }, { arrayFilters: [{ 't.team': { $in: teams } }] });
+  botKick(code); // a removed user may have held the lead: the bots carry on
+  await broadcast(code);
+  return targets.map((t) => ({ team: String(t.team), short: t.short, user: t.ownerName }));
 }
 
 // Cleans up a person who somehow holds several teams in a lobby (older rooms): keeps the first, frees the rest.
@@ -455,4 +477,4 @@ async function deleteAuction(code) {
 // Test hook: which timers are currently armed for an auction (close / advance / bot).
 const timerKinds = (code) => Object.keys(timers.get(code) || {});
 
-module.exports = { tidyOwner, timerKinds, deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };
+module.exports = { kickTeams, tidyOwner, timerKinds, deleteAuction, init, view, broadcast, createAuction, claimTeam, releaseTeam, start, placeBid, pass, hostAction, recover, baseOf, setBidTimer, releaseAllFor, TIMER_OPTIONS };

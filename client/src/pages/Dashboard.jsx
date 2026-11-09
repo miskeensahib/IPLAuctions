@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { KickDialog, kickable } from '../KickOut';
 import { Link } from 'react-router-dom';
 import { api, fetchAllPlayers } from '../api';
 import { useAuction, useCountdown, useToast } from '../state';
@@ -51,6 +52,7 @@ export function CurrentPlayer({ compact }) {
   const [busy, setBusy] = useState(false);
   const toggling = useRef(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showKick, setShowKick] = useState(false);
   const wl = useWatchlist();
   const strength = useStrength(auction);
   const live = auction.live;
@@ -147,10 +149,12 @@ export function CurrentPlayer({ compact }) {
           {auction.status === 'paused' && <button className="btn ghost sm" onClick={() => hostToggle('resume')}>Resume</button>}
           <button className="btn ghost sm danger" onClick={() => window.confirm('End the auction now?') && act('host/end')}>End auction</button>
           <button className="btn ghost sm" onClick={() => setShowSettings(true)}>Settings</button>
+          {kickable(auction).length > 0 && <button className="btn ghost sm danger" onClick={() => setShowKick(true)}>Kick out</button>}
         </div>
       )}
       {auction.status === 'paused' && <div className="banner warn">Auction paused by host</div>}
       {showSettings && <TimerSettings onClose={() => setShowSettings(false)} />}
+      {showKick && <KickDialog onClose={() => setShowKick(false)} />}
     </section>
   );
 }

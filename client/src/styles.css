@@ -326,3 +326,13 @@ b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbb
 .save-opt input { width: 20px; height: 20px; margin-top: 2px; accent-color: #3b82f6; flex: none; }
 .save-opt b { display: block; font-size: 15px; } .save-opt small { color: var(--muted); font-size: 12.5px; }
 .save-pop .row-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+/* Host: kick out users */
+.kick-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 10px 0; padding: 8px 10px; border: 1px dashed var(--line2); border-radius: 10px; }
+.kick-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.team-pick.kickable { cursor: pointer; opacity: 1; }
+.team-pick.kickable.picked { outline: 2px solid #ef4444; background: #3a1620; }
+.kick-list { list-style: none; margin: 8px 0 12px; padding: 0; display: grid; gap: 8px; max-height: 48vh; overflow-y: auto; }
+.kick-list .save-opt { align-items: center; margin: 0; } .kick-list .save-opt.on { border-color: #ef4444; background: #3a1620; }
+.kick-quick { justify-content: flex-start; margin-bottom: 6px; }
+.btn.primary.danger { background: #b91c1c; border-color: #b91c1c; }

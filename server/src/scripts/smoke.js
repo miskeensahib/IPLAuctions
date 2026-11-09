@@ -54,6 +54,39 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert(mid.s < 10 && (mid.bids > after.bids || mid.s < 7.5), 'clock keeps counting down between bids');
   }
 
+  { // only the host can kick users out: one user, or several at once
+    const C3 = 'smoke-client-3', C4 = 'smoke-client-4';
+    const { body: { code: kc } } = await call('POST', '/api/auctions', { mode: 'mini', play: 'multi', hostName: 'Boss' }); // host = ME
+    const kv = async () => (await call('GET', `/api/auctions/${kc}`)).body;
+    const tid = async (s) => (await kv()).teams.find((t) => t.short === s).team;
+    const ks = async (s) => (await kv()).teams.find((t) => t.short === s);
+    const [t1, t2, t3, t4] = [await tid('CSK'), await tid('MI'), await tid('RCB'), await tid('KKR')];
+    await call('POST', `/api/auctions/${kc}/claim`, { teamId: t1, name: 'Boss' });
+    await call('POST', `/api/auctions/${kc}/claim`, { teamId: t2, name: 'Two' }, OTHER);
+    await call('POST', `/api/auctions/${kc}/claim`, { teamId: t3, name: 'Three' }, C3);
+    await call('POST', `/api/auctions/${kc}/claim`, { teamId: t4, name: 'Four' }, C4);
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t3] }, OTHER)).status, 403, 'a regular user cannot kick');
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t3] }, 'stranger')).status, 403, 'nor can an outsider');
+    assert((await ks('RCB')).claimed, 'refused kick changes nothing');
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t1] })).status, 400, 'the host cannot kick themselves');
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [] })).status, 400, 'nothing selected');
+    // single user
+    const one = await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t2] });
+    assert.strictEqual(one.status, 200); assert.strictEqual(one.body.removed.length, 1);
+    assert(!(await ks('MI')).claimed && (await ks('MI')).ownerName == null, 'kicked user is removed from MI');
+    assert((await ks('RCB')).claimed && (await ks('KKR')).claimed && (await ks('CSK')).claimed, 'the others are untouched');
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/claim`, { teamId: t2, name: 'Two' }, OTHER)).status, 403, 'a kicked user cannot take a team again');
+    assert.strictEqual((await call('GET', `/api/auctions/${kc}/me`, null, OTHER)).body.kicked, true, 'and is told why');
+    assert.strictEqual((await call('GET', `/api/auctions/${kc}/me`)).body.kicked, false);
+    assert(!('kicked' in (await kv())), 'the removed list is private');
+    assert.strictEqual((await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t2] })).status, 409, 'a bot team has no user to kick');
+    // several users at once
+    const many = await call('POST', `/api/auctions/${kc}/kick`, { teamIds: [t3, t4] });
+    assert.strictEqual(many.status, 200); assert.strictEqual(many.body.removed.length, 2);
+    assert(!(await ks('RCB')).claimed && !(await ks('KKR')).claimed, 'both selected users are removed together');
+    assert((await ks('CSK')).claimed, 'host keeps their team');
+  }
+
   { // one team per person: switching teams frees the old one, in a multiplayer room too
     const { body: { code: rc } } = await call('POST', '/api/auctions', { mode: 'mini', play: 'multi', hostName: 'Tester' });
     const view = async () => (await call('GET', `/api/auctions/${rc}`)).body;

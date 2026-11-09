@@ -3,13 +3,19 @@ import { api } from '../api';
 import { useAuction, useToast, useUserName } from '../state';
 import { TeamBadge } from '../ui';
 import { cr } from '../utils';
+import { confirmKick, kickTeams, kickable } from '../KickOut';
 
 export default function Lobby() {
-  const { auction, myTeamId, setMyTeam, isHost, code } = useAuction();
+  const { auction, myTeamId, setMyTeam, isHost, kicked, code } = useAuction();
   const [name] = useUserName();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [sel, setSel] = useState([]); // host only: teams whose users are selected to be kicked out
   const s = auction.settings;
+  const users = isHost ? kickable(auction) : [];
+  const chosen = users.filter((t) => sel.includes(t.team));
+  const toggle = (id) => setSel((x) => (x.includes(id) ? x.filter((y) => y !== id) : [...x, id]));
+  const kick = async () => { if (!chosen.length || !confirmKick(chosen)) return; setBusy(true); if (await kickTeams(code, chosen.map((t) => t.team), toast)) setSel([]); setBusy(false); };
 
   const claim = async (t) => {
     setBusy(true);
@@ -34,15 +40,28 @@ export default function Lobby() {
           <div><h3 className="panel-title">SELECT YOUR TEAM</h3><p className="muted small">{auction.name} · {auction.play === 'solo' ? 'Solo vs bots' : 'Multiplayer room'}</p></div>
           <button className="btn ghost sm" onClick={copy}>Room {code} · Copy link</button>
         </div>
+        {kicked && <div className="banner warn">The host removed you from this room, so you can only watch.</div>}
+        {isHost && users.length > 0 && (
+          <div className="kick-bar">
+            <span className="muted small">Host: tap a team to select its user, then Kick out.</span>
+            <span className="kick-actions">
+              <button type="button" className="btn ghost sm" onClick={() => setSel(users.map((t) => t.team))}>Select all</button>
+              {chosen.length > 0 && <button type="button" className="btn ghost sm" onClick={() => setSel([])}>Clear</button>}
+              <button type="button" className="btn ghost sm danger" disabled={!chosen.length || busy} onClick={kick}>Kick out{chosen.length ? ` (${chosen.length})` : ''}</button>
+            </span>
+          </div>
+        )}
         <div className="team-grid">
           {auction.teams.map((t) => {
             const mine = t.team === myTeamId;
             const taken = t.claimed && !mine;
+            const kickPick = isHost && taken && !t.host; // the host can select other users' teams to kick them out
+            const picked = kickPick && sel.includes(t.team);
             return (
-              <button key={t.team} disabled={busy || taken} className={`team-pick${mine ? ' mine' : ''}${taken ? ' taken' : ''}`} style={{ '--tc': t.color }} onClick={() => claim(t)}>
+              <button key={t.team} disabled={busy || (taken && !kickPick) || (kicked && !taken)} className={`team-pick${mine ? ' mine' : ''}${taken ? ' taken' : ''}${kickPick ? ' kickable' : ''}${picked ? ' picked' : ''}`} style={{ '--tc': t.color }} onClick={() => (kickPick ? toggle(t.team) : claim(t))} aria-pressed={kickPick ? picked : undefined}>
                 <TeamBadge short={t.short} color={t.color} size={52} />
                 <b>{t.short}</b><small>{t.name}</small>
-                {taken && <em>{t.ownerName}</em>}{mine && <em>✓ You</em>}
+                {taken && <em>{picked ? '\u2713 ' : ''}{t.ownerName}</em>}{mine && <em>✓ You</em>}
               </button>
             );
           })}

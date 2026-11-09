@@ -38,7 +38,7 @@ export function AuctionProvider({ code, children }) {
   const [error, setError] = useState(null);
   const [connected, setConnected] = useState(socket.connected);
   // Team ownership and host status are stored in MongoDB and read through the API (never from the browser).
-  const [me, setMe] = useState({ isHost: false, teamId: null });
+  const [me, setMe] = useState({ isHost: false, teamId: null, kicked: false });
   const offset = useRef(0);
 
   // A pause/resume the host just clicked stays on screen until the server confirms it. Without this, an update that
@@ -98,10 +98,11 @@ export function AuctionProvider({ code, children }) {
   const setMyTeam = (id) => setMe((m) => ({ ...m, teamId: id })); // instant UI update; the server copy is already saved
   const myTeamId = me.teamId;
   const isHost = me.isHost;
+  const kicked = !!me.kicked;
   const myTeam = auction?.teams.find((t) => t.team === myTeamId) || null;
   const now = () => Date.now() + offset.current;
 
-  const value = { patchAuction: setAuction, holdStatus, code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, now, refresh: () => api(`/auctions/${code}`).then((a) => apply(a, true)) };
+  const value = { patchAuction: setAuction, holdStatus, code, auction, error, connected, myTeam, myTeamId, setMyTeam, isHost, kicked, now, refresh: () => api(`/auctions/${code}`).then((a) => apply(a, true)) };
   return <AuctionCtx.Provider value={value}>{children}</AuctionCtx.Provider>;
 }
 
