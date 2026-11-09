@@ -7,6 +7,7 @@ import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, roleCounts, teamLabel } from '../ut
 import { BidHistory, CurrentPlayer, TeamPanel, useResults, useSquads } from './Dashboard';
 import Lobby from './Lobby';
 import SquadActions from '../SquadActions';
+import { KickConfirm } from '../KickOut';
 import { groupSquad } from '../squadImage';
 import { PurchasedPlayers, StrengthBadge, TeamRanking, useStrength } from '../strength';
 
@@ -51,6 +52,7 @@ export function Squad() {
   const { auction, myTeam, myTeamId, isHost } = useAuction();
   const squads = useSquads(auction);
   const [short, setShort] = useState(null);
+  const [ask, setAsk] = useState(null); // host only: the team whose user the host is being asked to kick out
   const sel = auction.teams.find((t) => t.short === (short || myTeam?.short)) || auction.teams[0];
   const sq = squads.find((s) => s.team.short === sel.short)?.players || [];
   const rc = roleCounts(sq.map((x) => x.player));
@@ -60,11 +62,14 @@ export function Squad() {
   const strength = useStrength(auction);
   const byId = new Map((strength?.players || []).map((p) => [p.id, p]));
   const selStrength = strength?.teams.find((t) => t.short === sel.short);
+  // Clicking a team always shows its players, as before. For the host, a team that another user has joined also asks Yes / No to kick that user out.
+  const pickTeam = (s) => { setShort(s); const t = auction.teams.find((x) => x.short === s); if (isHost && t && t.claimed && !t.host) setAsk(t); };
   const labelOf = (s) => { const t = auction.teams.find((x) => x.short === s); return t ? teamLabel(t, { isHost, myTeamId }) : s; };
   return (
     <div className="stack">
       <TeamPanel team={sel} />
-      <TeamRanking data={strength} selected={sel.short} onSelect={setShort} labelOf={labelOf} />
+      <TeamRanking data={strength} selected={sel.short} onSelect={pickTeam} labelOf={labelOf} />
+      {ask && <KickConfirm team={ask} squad={squads.find((s) => s.team.short === ask.short)?.players.length || 0} onClose={() => setAsk(null)} />}
       <section className="panel">
         <div className="lobby-head"><h3 className="panel-title">SQUAD</h3>
           <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>

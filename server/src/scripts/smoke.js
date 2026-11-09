@@ -40,10 +40,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.strictEqual((await tv()).settings.resetSeconds, 10, 'bid reset follows the one configured timer');
     await call('POST', `/api/auctions/${tc}/start`);
     const left = async () => { const x = (await tv()).live; return { s: (new Date(x.endsAt) - Date.now()) / 1000, clock: x.clockSeconds, bids: x.bidCount, high: x.highestTeam }; };
-    let before, status = 0; // bots also bid and restart the clock: wait until it has really run below 6s, then bid at once
+    let before, status = 0; // bots also bid and restart the clock: wait until it has visibly run down, then bid at once
     for (let i = 0; i < 400 && status !== 200; i++) {
       before = await left();
-      if (before.s < 6 && before.s > 1 && String(before.high) !== String(tm)) status = (await call('POST', `/api/auctions/${tc}/bid`, { teamId: tm })).status;
+      if (before.s < 8.5 && before.s > 1 && String(before.high) !== String(tm)) status = (await call('POST', `/api/auctions/${tc}/bid`, { teamId: tm })).status;
       else await sleep(150);
     }
     assert.strictEqual(status, 200, 'bid placed while the clock was running down');
@@ -85,6 +85,30 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.strictEqual(many.status, 200); assert.strictEqual(many.body.removed.length, 2);
     assert(!(await ks('RCB')).claimed && !(await ks('KKR')).claimed, 'both selected users are removed together');
     assert((await ks('CSK')).claimed, 'host keeps their team');
+  }
+
+  { // a kicked user's team is taken over by a bot that keeps the squad and purse and carries on bidding
+    const { body: { code: bc } } = await call('POST', '/api/auctions', { mode: 'rapid', play: 'multi', hostName: 'Boss', settings: { initialSeconds: 5, breakSeconds: 1, poolSize: 12, poolOrder: 'sequential' } });
+    const bv = async () => (await call('GET', `/api/auctions/${bc}`)).body;
+    const bt = async (s) => (await bv()).teams.find((t) => t.short === s);
+    const mi = (await bt('MI')).team;
+    await call('POST', `/api/auctions/${bc}/claim`, { teamId: (await bt('CSK')).team, name: 'Boss' });
+    await call('POST', `/api/auctions/${bc}/claim`, { teamId: mi, name: 'Mia' }, OTHER);
+    // the user has already bought two players (squad count, spent, purse as stored in the database)
+    const AuB = require('../models/Auction'), mi0 = await bt('MI');
+    await AuB.updateOne({ code: bc }, { $set: { 'teams.$[t].count': 2, 'teams.$[t].spent': 500, 'teams.$[t].purse': mi0.purse - 500 } }, { arrayFilters: [{ 't.team': mi }] });
+    await call('POST', `/api/auctions/${bc}/start`);
+    const before = await bt('MI');
+    assert.strictEqual((await call('POST', `/api/auctions/${bc}/kick`, { teamIds: [mi] }, OTHER)).status, 403, 'only the host can kick');
+    assert.strictEqual((await call('POST', `/api/auctions/${bc}/kick`, { teamIds: [mi] })).status, 200);
+    const after = await bt('MI');
+    assert(after.isBot && !after.claimed, 'the team is now a bot');
+    assert.deepStrictEqual([after.count, after.spent, after.purse], [before.count, before.spent, before.purse], 'squad count, spent and purse are kept exactly');
+    let botBid = null; // the bot must now bid for MI on its own, within its remaining purse
+    for (let i = 0; i < 400 && !botBid; i++) { await sleep(300); const v = await bv(); botBid = (v.bids || []).concat(v.recent || []).find((b) => b.teamShort === 'MI' && b.byBot); if (v.status === 'completed') break; }
+    assert(botBid, 'the bot carries on bidding for the kicked user’s team');
+    const fin = await bt('MI');
+    assert(fin.count >= 2 && fin.spent >= 500, 'players already bought are still in the squad');
   }
 
   { // one team per person: switching teams frees the old one, in a multiplayer room too

@@ -56,3 +56,23 @@ export function KickDialog({ onClose }) {
     </div>
   );
 }
+
+// Host-only Yes / No question shown when the host clicks a team that a user has joined. "No" changes nothing:
+// the team stays selected and its players stay on screen exactly as before.
+export function KickConfirm({ team, squad, onClose }) {
+  const { code } = useAuction();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { const k = (e) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  const yes = async () => { setBusy(true); await kickTeams(code, [team.team], toast); onClose(); };
+  return (
+    <div className="modal" role="dialog" aria-modal="true" aria-labelledby="kc-title" onClick={() => !busy && onClose()}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <h3 id="kc-title" className="panel-title">KICK OUT {team.ownerName?.toUpperCase()}?</h3>
+        <p>Do you want to kick <b>{team.ownerName}</b> out of <b>{team.name}</b>?</p>
+        <p className="muted small">The team keeps its {squad} player{squad === 1 ? '' : 's'} and its {(team.purse / 100).toFixed(2)} Cr purse. A Bot takes over and continues the auction for this team. {team.ownerName} cannot rejoin this room.</p>
+        <div className="row-btns"><button type="button" className="btn ghost" disabled={busy} onClick={onClose} autoFocus>No</button><button type="button" className="btn primary danger" disabled={busy} onClick={yes}>{busy ? 'Kicking…' : 'Yes'}</button></div>
+      </div>
+    </div>
+  );
+}
