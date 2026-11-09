@@ -3,13 +3,15 @@ import { api } from '../api';
 import { useAuction, useToast, useUserName } from '../state';
 import { TeamBadge } from '../ui';
 import { cr } from '../utils';
-import { confirmKick, kickTeams, kickable } from '../KickOut';
+import { KickConfirm, confirmKick, kickTeams, kickable } from '../KickOut';
 
 export default function Lobby() {
   const { auction, myTeamId, setMyTeam, isHost, kicked, code } = useAuction();
   const [name] = useUserName();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [ask, setAsk] = useState(null); // host only: the user whose details are open
+  const [multi, setMulti] = useState(false); // host only: tick several teams instead of opening one user
   const [sel, setSel] = useState([]); // host only: teams whose users are selected to be kicked out
   const s = auction.settings;
   const users = isHost ? kickable(auction) : [];
@@ -43,22 +45,24 @@ export default function Lobby() {
         {kicked && <div className="banner warn">The host removed you from this room, so you can only watch.</div>}
         {isHost && users.length > 0 && (
           <div className="kick-bar">
-            <span className="muted small">Host: tap a team to select its user, then Kick out.</span>
+            <span className="muted small">{multi ? 'Tap teams to tick their users, then Kick out.' : 'Host: tap a joined team to see that user and kick them out.'}</span>
             <span className="kick-actions">
-              <button type="button" className="btn ghost sm" onClick={() => setSel(users.map((t) => t.team))}>Select all</button>
-              {chosen.length > 0 && <button type="button" className="btn ghost sm" onClick={() => setSel([])}>Clear</button>}
-              <button type="button" className="btn ghost sm danger" disabled={!chosen.length || busy} onClick={kick}>Kick out{chosen.length ? ` (${chosen.length})` : ''}</button>
+              <button type="button" className={`btn ghost sm${multi ? ' on' : ''}`} aria-pressed={multi} onClick={() => { setMulti(!multi); setSel([]); }}>{multi ? 'Done' : 'Select several'}</button>
+              {multi && <button type="button" className="btn ghost sm" onClick={() => setSel(users.map((t) => t.team))}>Select all</button>}
+              {multi && chosen.length > 0 && <button type="button" className="btn ghost sm" onClick={() => setSel([])}>Clear</button>}
+              {multi && <button type="button" className="btn ghost sm danger" disabled={!chosen.length || busy} onClick={kick}>Kick out{chosen.length ? ` (${chosen.length})` : ''}</button>}
             </span>
           </div>
         )}
+        {ask && <KickConfirm team={ask} onClose={() => setAsk(null)} />}
         <div className="team-grid">
           {auction.teams.map((t) => {
             const mine = t.team === myTeamId;
             const taken = t.claimed && !mine;
             const kickPick = isHost && taken && !t.host; // the host can select other users' teams to kick them out
-            const picked = kickPick && sel.includes(t.team);
+            const picked = kickPick && multi && sel.includes(t.team);
             return (
-              <button key={t.team} disabled={busy || (taken && !kickPick) || (kicked && !taken)} className={`team-pick${mine ? ' mine' : ''}${taken ? ' taken' : ''}${kickPick ? ' kickable' : ''}${picked ? ' picked' : ''}`} style={{ '--tc': t.color }} onClick={() => (kickPick ? toggle(t.team) : claim(t))} aria-pressed={kickPick ? picked : undefined}>
+              <button key={t.team} disabled={busy || (taken && !kickPick) || (kicked && !taken)} className={`team-pick${mine ? ' mine' : ''}${taken ? ' taken' : ''}${kickPick ? ' kickable' : ''}${picked ? ' picked' : ''}`} style={{ '--tc': t.color }} onClick={() => (kickPick ? (multi ? toggle(t.team) : setAsk(t)) : claim(t))} aria-pressed={kickPick ? picked : undefined}>
                 <TeamBadge short={t.short} color={t.color} size={52} />
                 <b>{t.short}</b><small>{t.name}</small>
                 {taken && <em>{picked ? '\u2713 ' : ''}{t.ownerName}</em>}{mine && <em>✓ You</em>}

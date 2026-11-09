@@ -57,21 +57,40 @@ export function KickDialog({ onClose }) {
   );
 }
 
-// Host-only Yes / No question shown when the host clicks a team that a user has joined. "No" changes nothing:
-// the team stays selected and its players stay on screen exactly as before.
+// Host-only: the details of the user who joined a team, with a Kick out button that asks Yes / No.
+// "No" (or Close) changes nothing: the team stays selected and its players stay on screen exactly as before.
 export function KickConfirm({ team, squad, onClose }) {
-  const { code } = useAuction();
+  const { code, auction } = useAuction();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [sure, setSure] = useState(false);
   useEffect(() => { const k = (e) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  const players = squad ?? team.count ?? 0;
   const yes = async () => { setBusy(true); await kickTeams(code, [team.team], toast); onClose(); };
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-labelledby="kc-title" onClick={() => !busy && onClose()}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <h3 id="kc-title" className="panel-title">KICK OUT {team.ownerName?.toUpperCase()}?</h3>
-        <p>Do you want to kick <b>{team.ownerName}</b> out of <b>{team.name}</b>?</p>
-        <p className="muted small">The team keeps its {squad} player{squad === 1 ? '' : 's'} and its {(team.purse / 100).toFixed(2)} Cr purse. A Bot takes over and continues the auction for this team. {team.ownerName} cannot rejoin this room.</p>
-        <div className="row-btns"><button type="button" className="btn ghost" disabled={busy} onClick={onClose} autoFocus>No</button><button type="button" className="btn primary danger" disabled={busy} onClick={yes}>{busy ? 'Kicking…' : 'Yes'}</button></div>
+        <button className="icon-btn x" onClick={onClose} aria-label="Close" disabled={busy}>✕</button>
+        <div className="cp-top"><TeamBadge short={team.short} color={team.color} size={64} />
+          <div className="cp-info"><h3 id="kc-title" className="panel-title" style={{ margin: 0 }}>{team.ownerName}</h3><small className="muted">User in {team.name}</small></div>
+        </div>
+        <dl className="kv">
+          <div><dt>Username</dt><dd>{team.ownerName}</dd></div>
+          <div><dt>Team</dt><dd>{team.name} ({team.short})</dd></div>
+          <div><dt>Players bought</dt><dd>{players} / {auction.settings.maxSquad}</dd></div>
+          <div><dt>Purse left</dt><dd>{(team.purse / 100).toFixed(2)} Cr</dd></div>
+          <div><dt>Spent</dt><dd>{((team.spent || 0) / 100).toFixed(2)} Cr</dd></div>
+          <div><dt>Overseas</dt><dd>{team.overseas ?? 0} / {auction.settings.maxOverseas}</dd></div>
+        </dl>
+        {!sure ? (
+          <div className="row-btns"><button type="button" className="btn ghost" onClick={onClose}>Close</button><button type="button" className="btn primary danger" onClick={() => setSure(true)}>Kick out {team.ownerName}</button></div>
+        ) : (
+          <>
+            <p><b>Kick out {team.ownerName} from {team.name}?</b></p>
+            <p className="muted small">The team keeps its {players} player{players === 1 ? '' : 's'} and its purse. A Bot takes over and continues the auction for this team. {team.ownerName} cannot rejoin this room.</p>
+            <div className="row-btns"><button type="button" className="btn ghost" disabled={busy} onClick={onClose} autoFocus>No</button><button type="button" className="btn primary danger" disabled={busy} onClick={yes}>{busy ? 'Kicking…' : 'Yes'}</button></div>
+          </>
+        )}
       </div>
     </div>
   );
