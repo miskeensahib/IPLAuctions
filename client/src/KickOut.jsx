@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api';
 import { useAuction, useToast } from './state';
-import { TeamBadge } from './ui';
+import { Presence, TeamBadge } from './ui';
 
 // Host-only helper (the server refuses anyone else): kick out the users of the given teams.
 export async function kickTeams(code, teamIds, toast) {
@@ -45,7 +45,7 @@ export function KickDialog({ onClose }) {
                 <li key={t.team}><label className={`save-opt${sel.includes(t.team) ? ' on' : ''}`}>
                   <input type="checkbox" checked={sel.includes(t.team)} onChange={() => toggle(t.team)} />
                   <TeamBadge short={t.short} color={t.color} size={34} />
-                  <span><b>{t.ownerName}</b><small>{t.name}</small></span>
+                  <span><b><Presence online={t.online} name={t.ownerName} />{t.ownerName}</b><small>{t.name}</small></span>
                 </label></li>
               ))}
             </ul>
@@ -66,6 +66,7 @@ export function KickConfirm({ team, squad, onClose }) {
   const [sure, setSure] = useState(false);
   useEffect(() => { const k = (e) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
   const players = squad ?? team.count ?? 0;
+  const liveTeam = auction.teams.find((x) => x.team === team.team) || team; // stays up to date while the card is open
   const yes = async () => { setBusy(true); await kickTeams(code, [team.team], toast); onClose(); };
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-labelledby="kc-title" onClick={() => !busy && onClose()}>
@@ -75,7 +76,8 @@ export function KickConfirm({ team, squad, onClose }) {
           <div className="cp-info"><h3 id="kc-title" className="panel-title" style={{ margin: 0 }}>{team.ownerName}</h3><small className="muted">User in {team.name}</small></div>
         </div>
         <dl className="kv">
-          <div><dt>Username</dt><dd>{team.ownerName}</dd></div>
+          <div><dt>Username</dt><dd><Presence online={liveTeam.online} name={team.ownerName} />{team.ownerName}</dd></div>
+          <div><dt>Status</dt><dd>{liveTeam.online ? 'Online' : 'Offline'}</dd></div>
           <div><dt>Team</dt><dd>{team.name} ({team.short})</dd></div>
           <div><dt>Players bought</dt><dd>{players} / {auction.settings.maxSquad}</dd></div>
           <div><dt>Purse left</dt><dd>{(team.purse / 100).toFixed(2)} Cr</dd></div>

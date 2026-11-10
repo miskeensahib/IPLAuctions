@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');
+const presence = require('./lib/presence');
 const { connectDb } = require('./config/db');
 const engine = require('./engine/auctionEngine');
 const { requireAdmin } = require('./lib/http');
@@ -50,7 +51,11 @@ async function main() {
   const server = http.createServer(buildApp());
   const io = new Server(server, { cors: { origin: origins } });
   engine.init(io);
+  // who is this browser? (the same id it sends with every request; never shown to other users)
+  io.use((socket, next) => { const id = socket.handshake.auth?.clientId; socket.data.clientId = typeof id === 'string' && id.length >= 8 && id.length <= 64 ? id : null; next(); });
   io.on('connection', (socket) => {
+    const me = socket.data.clientId;
+    if (me) { presence.connect(me, socket.id); socket.on('disconnect', () => presence.disconnect(me, socket.id)); }
     socket.on('auction:join', async (code) => {
       code = String(code || '').toUpperCase().slice(0, 12);
       socket.join(`auction:${code}`);

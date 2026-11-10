@@ -54,6 +54,25 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert(mid.s < 10 && (mid.bids > after.bids || mid.s < 7.5), 'clock keeps counting down between bids');
   }
 
+  { // online / offline presence: connecting turns a person online, leaving turns them offline after a short grace period
+    process.env.PRESENCE_GRACE_MS = '150';
+    delete require.cache[require.resolve('../lib/presence')];
+    const pr = require('../lib/presence'); const seen = [];
+    pr.setOnChange((id, on) => seen.push([id, on]));
+    pr.connect('person-aaaa-1', 's1');
+    assert(pr.isOnline('person-aaaa-1'), 'connecting makes a person online');
+    pr.connect('person-aaaa-1', 's2'); // second tab
+    pr.disconnect('person-aaaa-1', 's1'); await sleep(300);
+    assert(pr.isOnline('person-aaaa-1'), 'still online while another tab is open');
+    pr.disconnect('person-aaaa-1', 's2');
+    assert(pr.isOnline('person-aaaa-1'), 'a refresh does not flash offline (grace period)');
+    pr.connect('person-aaaa-1', 's3'); await sleep(300); // came straight back
+    assert(pr.isOnline('person-aaaa-1') && seen.length === 1, 'coming back inside the grace period causes no offline event');
+    pr.disconnect('person-aaaa-1', 's3'); await sleep(350);
+    assert(!pr.isOnline('person-aaaa-1'), 'leaving turns the person offline');
+    assert.deepStrictEqual(seen, [['person-aaaa-1', true], ['person-aaaa-1', false]], 'exactly one online and one offline event');
+  }
+
   { // only the host can kick users out: one user, or several at once
     const C3 = 'smoke-client-3', C4 = 'smoke-client-4';
     const { body: { code: kc } } = await call('POST', '/api/auctions', { mode: 'mini', play: 'multi', hostName: 'Boss' }); // host = ME

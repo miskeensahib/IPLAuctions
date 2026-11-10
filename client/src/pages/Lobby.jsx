@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { useAuction, useToast, useUserName } from '../state';
-import { TeamBadge } from '../ui';
+import { Presence, TeamBadge } from '../ui';
 import { cr } from '../utils';
 import { KickConfirm, confirmKick, kickTeams, kickable } from '../KickOut';
 
@@ -65,7 +65,7 @@ export default function Lobby() {
               <button key={t.team} disabled={busy || (taken && !kickPick) || (kicked && !taken)} className={`team-pick${mine ? ' mine' : ''}${taken ? ' taken' : ''}${kickPick ? ' kickable' : ''}${picked ? ' picked' : ''}`} style={{ '--tc': t.color }} onClick={() => (kickPick ? (multi ? toggle(t.team) : setAsk(t)) : claim(t))} aria-pressed={kickPick ? picked : undefined}>
                 <TeamBadge short={t.short} color={t.color} size={52} />
                 <b>{t.short}</b><small>{t.name}</small>
-                {taken && <em>{picked ? '\u2713 ' : ''}{t.ownerName}</em>}{mine && <em>✓ You</em>}
+                {taken && <em><Presence online={t.online} name={t.ownerName} />{picked ? '\u2713 ' : ''}{t.ownerName}</em>}{mine && <em><Presence online name="You" />✓ You</em>}
               </button>
             );
           })}
@@ -82,7 +82,7 @@ export default function Lobby() {
         <p className="muted small">Unclaimed teams are controlled by bots. {s.minSquad ? `You must keep enough purse to still reach the minimum squad of ${s.minSquad} (₹0.30 Cr per missing player). ` : ''}Bids must beat the current bid by the increment, fit your purse and respect squad and overseas limits.</p>
         {isHost ? (
           <button className="btn primary block" disabled={!myTeamId || busy} onClick={start}>{myTeamId ? 'START AUCTION' : 'Pick a team to start'}</button>
-        ) : <p className="center-msg">Waiting for {auction.hostName} to start…</p>}
+        ) : <p className="center-msg"><Presence online={auction.hostOnline} name={auction.hostName} />Waiting for {auction.hostName} to start…</p>}
         {myTeamId && <button className="link-btn" onClick={release}>Release my team</button>}
       </section>
     </div>

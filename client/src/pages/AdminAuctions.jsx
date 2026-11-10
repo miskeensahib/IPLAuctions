@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { useToast } from '../state';
-import { Empty, Spinner, TeamBadge } from '../ui';
+import { Empty, Spinner, TeamBadge, Presence } from '../ui';
 import { cr } from '../utils';
 
 // Admin "Auctions" tab: every auction with its bids (Read), create a new one (Create), edit its details/rules (Update)
@@ -142,7 +142,7 @@ function AuctionDetail({ code, startEditing, onBack }) {
           {d.teams.map((t) => (
             <li key={t.team} className="admin-row">
               <TeamBadge short={t.short} color={t.color} size={32} />
-              <span className="grow"><b>{t.name}</b><br /><small className="muted">{t.isBot ? 'Bot' : `User: ${t.ownerName}`}</small></span>
+              <span className="grow"><b>{t.name}</b><br /><small className="muted">{t.isBot ? 'Bot' : <>User: <Presence online={t.online} name={t.ownerName} />{t.ownerName}</>}</small></span>
               <span className="right"><b className="green">{cr(t.purse)}</b><br /><small className="muted">{t.count}/{s.maxSquad} players · spent {cr(t.spent)}</small></span>
             </li>
           ))}

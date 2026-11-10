@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Navigate, Outlet, useMatch, Link } from 'react-router-dom';
-import { logout } from './api';
+import { logout, socket } from './api';
 import { AuctionProvider, useAuction, useUserName } from './state';
 import { cr } from './utils';
-import { TeamBadge, Spinner, ErrorBox } from './ui';
+import { TeamBadge, Spinner, ErrorBox, Presence } from './ui';
 import SoldPopup from './SoldPopup';
 
 const I = ({ d }) => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
@@ -50,7 +50,7 @@ export function TeamStrip() {
         <div key={t.team} className={`strip-card${t.team === myTeamId ? ' mine' : ''}`} style={{ '--tc': t.color }}>
           <div className="strip-top"><TeamBadge short={t.short} color={t.color} size={26} /><b>{t.short}</b></div>
           <div className="strip-purse">{cr(t.purse)}</div>
-          <div className="strip-sub">{t.count} / {auction.settings.maxSquad}{auction.settings.minSquad ? ` (min ${auction.settings.minSquad})` : ''}{!t.isBot && <em title={t.ownerName}> · {t.ownerName}</em>}</div>
+          <div className="strip-sub">{t.count} / {auction.settings.maxSquad}{auction.settings.minSquad ? ` (min ${auction.settings.minSquad})` : ''}{!t.isBot && <em title={t.ownerName}> · <Presence online={t.online} name={t.ownerName} />{t.ownerName}</em>}</div>
         </div>
       ))}
     </div>
@@ -77,6 +77,7 @@ export default function Layout() {
   const [name] = useUserName();
   const close = () => setOpen(false);
   const doLogout = () => { if (window.confirm('Log out? Any team you control will be handed to the bots.')) logout(); };
+  useEffect(() => { if (name) socket.connect(); }, [name]); // signed in = connected = shown as online to the others (closing the site disconnects)
   if (!name) return <Navigate to="/" replace />; // protected: no session, no pages
 
   const base = code ? `/a/${code}` : null;

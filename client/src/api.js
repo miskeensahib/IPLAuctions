@@ -73,4 +73,4 @@ export async function fetchAllPlayers(query = 'sort=marquee') {
   }
 }
 
-export const socket = io(BASE || undefined, { autoConnect: false, transports: ['websocket', 'polling'] });
+export const socket = io(BASE || undefined, { autoConnect: false, transports: ['websocket', 'polling'], auth: { clientId } });

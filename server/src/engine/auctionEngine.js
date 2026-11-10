@@ -10,10 +10,19 @@ const AuctionResult = require('../models/AuctionResult');
 const { HttpError } = require('../lib/http');
 const { nextBid, increment, estimateBase } = require('../lib/money');
 
+const presence = require('../lib/presence');
 let io = null;
 const timers = new Map(); // code -> { close, advance, bot }
 
-const init = (socketServer) => { io = socketServer; };
+const init = (socketServer) => { io = socketServer; presence.setOnChange(presenceChanged); };
+
+// A person came online / went offline: tell every room they are in (their team(s), and the host badge if they host it).
+async function presenceChanged(clientId, online) {
+  try {
+    const rooms = await Auction.find({ status: { $ne: 'completed' }, $or: [{ 'teams.ownerId': clientId }, { hostId: clientId }] }).select('code hostId teams.team teams.ownerId').lean();
+    for (const a of rooms) io.to(`auction:${a.code}`).emit('auction:presence', { code: a.code, online, teams: a.teams.filter((t) => t.ownerId === clientId).map((t) => String(t.team)), host: a.hostId === clientId });
+  } catch (e) { console.error('[presence]', e.message); }
+}
 // Base prices are not published by the official sources: use the stored one when an admin set it,
 // otherwise an estimate (marquee = 2 Cr, known result = nearest IPL slab, everyone else = 30 lakh minimum).
 const MIN_SLOT = 30; // lowest IPL base slab (lakh); reserved per still-needed squad slot
@@ -48,9 +57,10 @@ async function view(code) {
   const stat = (s) => sold.find((x) => x._id === s) || { n: 0, total: 0 };
   return {
     ...a,
+    hostOnline: presence.isOnline(a.hostId),
     hostId: undefined,
     kicked: undefined,
-    teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, claimed: !t.isBot, host: !t.isBot && ownerId === a.hostId })), // owner ids stay private; `host` only says whose team the host controls
+    teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, claimed: !t.isBot, host: !t.isBot && ownerId === a.hostId, online: !t.isBot && presence.isOnline(ownerId) })), // owner ids stay private; `host` only says whose team the host controls
     pool: undefined,
     poolTotal: a.pool.length,
     bids, recent,

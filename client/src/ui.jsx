@@ -24,6 +24,12 @@ export function SoundToggle() {
   );
 }
 
+// Green dot = online right now, red dot = offline. Updates live (no refresh) because the server pushes every change.
+export function Presence({ online, name }) {
+  const on = !!online;
+  return <i className={`pres ${on ? 'on' : 'off'}`} role="img" aria-label={`${name ? name + ' is ' : ''}${on ? 'online' : 'offline'}`} title={on ? 'Online' : 'Offline'} />;
+}
+
 export function TeamBadge({ short, color, size = 34 }) {
   return (
     <span className="tbadge" style={{ width: size, height: size, fontSize: size * 0.3, background: `linear-gradient(145deg, ${color || '#475569'}, #0b1020)` }}>

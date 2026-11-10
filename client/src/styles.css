@@ -337,3 +337,8 @@ b.elite, b.sv { color: #34d399; } b.high { color: #60a5fa; } b.mid { color: #fbb
 .kick-quick { justify-content: flex-start; margin-bottom: 6px; }
 .btn.primary.danger { background: #b91c1c; border-color: #b91c1c; }
 .kick-actions .btn.on { background: #1d3a7a; border-color: #3b82f6; }
+
+/* online / offline dot */
+.pres { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; flex: none; transition: background .25s, box-shadow .25s; }
+.pres.on { background: #22c55e; box-shadow: 0 0 0 3px #22c55e33; }
+.pres.off { background: #ef4444; box-shadow: 0 0 0 3px #ef444433; }

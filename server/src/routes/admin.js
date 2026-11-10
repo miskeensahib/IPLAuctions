@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const presence = require('../lib/presence');
 const Auction = require('../models/Auction');
 const Bid = require('../models/Bid');
 const AuctionResult = require('../models/AuctionResult');
@@ -53,7 +54,7 @@ router.get('/auctions/:code', wrap(async (req, res) => {
     Bid.countDocuments({ auction: a._id, ...human }),
     Auction.aggregate([{ $match: { _id: a._id } }, { $project: { n: { $size: '$pool' } } }]),
   ]);
-  res.json({ ...a, hostId: undefined, teams: a.teams.map(({ ownerId, ...t }) => t), results, bids, bidsByUsers: byUsers, poolTotal: size[0]?.n ?? 0 });
+  res.json({ ...a, hostId: undefined, teams: a.teams.map(({ ownerId, ...t }) => ({ ...t, online: !t.isBot && presence.isOnline(ownerId) })), results, bids, bidsByUsers: byUsers, poolTotal: size[0]?.n ?? 0 });
 }));
 
 // ---- READ: bid log (who bid what), paged, filterable ----

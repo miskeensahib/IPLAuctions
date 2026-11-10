@@ -77,6 +77,12 @@ export function AuctionProvider({ code, children }) {
       });
     };
     const onDeleted = (d) => { if (d.code === code) setError('This auction was removed by an admin'); };
+    // someone came online / went offline: update just that person's dot, instantly
+    const onPresence = (p) => {
+      if (p.code !== code) return;
+      setAuction((prev) => (prev ? { ...prev, hostOnline: p.host ? p.online : prev.hostOnline, teams: prev.teams.map((t) => (p.teams.includes(t.team) ? { ...t, online: p.online } : t)) } : prev));
+    };
+    socket.on('auction:presence', onPresence);
     socket.on('auction:update', onUpdate); socket.on('connect', onConn); socket.on('disconnect', onDisc); socket.on('auction:deleted', onDeleted); socket.on('auction:patch', onPatch);
     socket.connect();
     if (socket.connected) onConn();
@@ -85,7 +91,7 @@ export function AuctionProvider({ code, children }) {
     return () => {
       alive = false; clearInterval(poll);
       socket.emit('auction:leave', code);
-      socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc); socket.off('auction:deleted', onDeleted); socket.off('auction:patch', onPatch);
+      socket.off('auction:presence', onPresence); socket.off('auction:update', onUpdate); socket.off('connect', onConn); socket.off('disconnect', onDisc); socket.off('auction:deleted', onDeleted); socket.off('auction:patch', onPatch);
     };
   }, [code, apply]);
 

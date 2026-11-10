@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from './api';
-import { Avatar, Empty, Spinner, TeamBadge } from './ui';
+import { Avatar, Empty, Presence, Spinner, TeamBadge } from './ui';
 import { cc, cr } from './utils';
 
 // Live player strength + team ranking. The data comes from GET /api/auctions/:code/strength, which only ever contains
@@ -38,7 +38,7 @@ export function StrengthBadge({ value, note, kind }) {
   );
 }
 
-export function TeamRanking({ data, selected, onSelect, labelOf }) {
+export function TeamRanking({ data, selected, onSelect, labelOf, onlineOf }) {
   if (!data) return <section className="panel"><h3 className="panel-title">TEAM RANKING · AVERAGE STRENGTH</h3><Spinner /></section>;
   const any = data.teams.some((t) => t.rank);
   return (
@@ -51,7 +51,7 @@ export function TeamRanking({ data, selected, onSelect, labelOf }) {
               <span className={`rank-no${t.rank && t.rank <= 3 ? ` r${t.rank}` : ''}`}>{t.rank ? `#${t.rank}` : '–'}</span>
               <TeamBadge short={t.short} color={t.color} size={34} />
               <span className="grow rank-name">
-                <b>{labelOf ? labelOf(t.short) : t.name}</b>
+                <b>{(() => { const o = onlineOf && onlineOf(t.short); return o ? <Presence online={o.online} name={o.name} /> : null; })()}{labelOf ? labelOf(t.short) : t.name}</b>
                 <small className="muted">{t.count} bought{t.count ? ` · ${t.rated} from stats${t.estimated ? ` · ${t.estimated} est.` : ''}` : ''}{t.best ? ` · best: ${t.best.name} (${Math.round(t.best.strength)})` : ''}</small>
               </span>
               <span className="rank-avg">

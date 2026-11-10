@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useAuction } from '../state';
 import { TeamStrip } from '../Layout';
-import { Avatar, Empty, TeamBadge } from '../ui';
+import { Avatar, Empty, Presence, TeamBadge } from '../ui';
 import { ROLE_KEYS, ROLE_SHORT, ago, cc, cr, roleCounts, teamLabel } from '../utils';
 import { BidHistory, CurrentPlayer, TeamPanel, useResults, useSquads } from './Dashboard';
 import Lobby from './Lobby';
@@ -38,7 +38,7 @@ export function Teams() {
         {auction.teams.map((t) => (
           <li key={t.team} className={t.team === myTeamId ? 'mine' : ''}>
             <TeamBadge short={t.short} color={t.color} size={44} />
-            <span className="grow"><b>{t.name}</b><br /><small className="muted">{t.overseas} overseas · {t.isBot ? 'Bot' : t.ownerName}</small></span>
+            <span className="grow"><b>{t.name}</b><br /><small className="muted">{t.overseas} overseas · {t.isBot ? 'Bot' : <><Presence online={t.online} name={t.ownerName} />{t.ownerName}</>}</small></span>
             <span className="right"><b className="green">{cr(t.purse)}</b><br /><small className="muted">{t.count} / {auction.settings.maxSquad}{auction.settings.minSquad ? ` · min ${auction.settings.minSquad}` : ''}</small></span>
             <SquadActions compact team={t} players={squads.find((s) => s.team.short === t.short)?.players || []} />
           </li>
@@ -68,11 +68,11 @@ export function Squad() {
   return (
     <div className="stack">
       <TeamPanel team={sel} />
-      <TeamRanking data={strength} selected={sel.short} onSelect={pickTeam} labelOf={labelOf} />
+      <TeamRanking data={strength} selected={sel.short} onSelect={pickTeam} labelOf={labelOf} onlineOf={(s) => { const t = auction.teams.find((x) => x.short === s); return t && t.claimed ? { online: t.online, name: t.ownerName } : null; }} />
       {ask && <KickConfirm team={ask} squad={squads.find((s) => s.team.short === ask.short)?.players.length || 0} onClose={() => setAsk(null)} />}
       <section className="panel">
         <div className="lobby-head"><h3 className="panel-title">SQUAD</h3>
-          <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>
+          <select value={sel.short} onChange={(e) => setShort(e.target.value)} aria-label="Team">{auction.teams.map((t) => <option key={t.short} value={t.short}>{t.claimed ? (t.online ? '\u{1F7E2} ' : '\u{1F534} ') : ''}{teamLabel(t, { isHost, myTeamId })}</option>)}</select></div>
         {selStrength && <p className="sq-avg">Average strength <b className={`sv ${selStrength.avg == null ? 'none' : ''}`}>{selStrength.avg == null ? '—' : selStrength.avg.toFixed(1)}</b> · Rank <b>{selStrength.rank ? `#${selStrength.rank}` : '—'}</b> <small className="muted">({selStrength.rated} of {selStrength.count} from IPL stats{selStrength.estimated ? `, ${selStrength.estimated} estimated` : ""})</small></p>}
         <div className="seg wrap">
           <button className={!role ? 'on' : ''} onClick={() => setRole('')}>All ({sq.length})</button>
