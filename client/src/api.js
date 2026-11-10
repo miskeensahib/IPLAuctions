@@ -74,3 +74,11 @@ export async function fetchAllPlayers(query = 'sort=marquee') {
 }
 
 export const socket = io(BASE || undefined, { autoConnect: false, transports: ['websocket', 'polling'], auth: { clientId } });
+
+// Leaving the site is reported at once: the connection is closed the moment the page is hidden / closed, so the others
+// see "offline" immediately instead of waiting for the server to notice. If the page comes back (back button, restored
+// tab) it reconnects and shows online again.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => { try { socket.disconnect(); } catch { /* closing anyway */ } });
+  window.addEventListener('pageshow', (e) => { if (e.persisted && store.get('ipl.name')) { try { socket.connect(); } catch { /* ignore */ } } });
+}

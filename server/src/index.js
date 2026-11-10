@@ -49,7 +49,8 @@ async function main() {
   await connectDb();
   if (process.env.AUTO_SEED !== 'false') console.log('[seed]', await seedAll());
   const server = http.createServer(buildApp());
-  const io = new Server(server, { cors: { origin: origins } });
+  // fast heartbeats: a person whose network dies (no clean close) is noticed in about 9 seconds instead of 45
+  const io = new Server(server, { cors: { origin: origins }, pingInterval: 5000, pingTimeout: 4000 });
   engine.init(io);
   // who is this browser? (the same id it sends with every request; never shown to other users)
   io.use((socket, next) => { const id = socket.handshake.auth?.clientId; socket.data.clientId = typeof id === 'string' && id.length >= 8 && id.length <= 64 ? id : null; next(); });

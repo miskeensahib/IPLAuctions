@@ -2,7 +2,7 @@
 // server (socket.io), so closing the site, logging out or losing the network turns them offline by itself.
 // A short grace period keeps a page refresh from flashing "offline": the person only goes offline if they have not
 // come back within GRACE_MS.
-const GRACE_MS = Number(process.env.PRESENCE_GRACE_MS ?? 4000);
+const GRACE_MS = Number(process.env.PRESENCE_GRACE_MS ?? 1000);
 const users = new Map(); // clientId -> { sockets: Set<socketId>, timer }
 let onChange = () => {};
 
